@@ -1,1 +1,0 @@
-﻿# Estad-a-Kairos
