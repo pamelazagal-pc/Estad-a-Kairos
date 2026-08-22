@@ -9,12 +9,12 @@ $mensaje = $resultado['mensaje'] ?? null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de maestros | Kairos</title>
-    <link rel="stylesheet" href="../CSS/main.css">
+    <link rel="stylesheet" href="../../CSS/main.css">
 </head>
 <body>
     <main class="tarjeta">
         <h1>Registro de maestro</h1>
-        <p class="descripcion">Crea una cuenta docente para acceder a la plataforma Kairos.</p>
+        <p class="descripcion">Crea una cuenta de maestro para acceder a la plataforma Kairos.</p>
 
         <?php if ($errores !== []): ?>
             <div class="alerta alerta-error" role="alert">
@@ -32,13 +32,7 @@ $mensaje = $resultado['mensaje'] ?? null;
             </div>
         <?php endif; ?>
 
-        <?php
-$scriptActual = $_SERVER['SCRIPT_NAME'] ?? '';
-$actionFormulario = strpos($scriptActual, '/public/') !== false
-    ? basename($scriptActual)
-    : '../../Public/accesos/registro_maestro.php';
-?>
-        <form method="POST" action="<?= htmlspecialchars($actionFormulario, ENT_QUOTES, 'UTF-8') ?>">
+        <form method="POST">
             <input type="hidden" name="accion" value="registrar">
 
             <div class="campo">

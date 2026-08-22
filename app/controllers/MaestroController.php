@@ -11,7 +11,41 @@ class MaestroController
         $this->maestroModel = new Maestro($connection);
     }
 
+        public function iniciarSesion(): array
+    {
+        $correo = trim($_POST['correo'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $errores = [];
+
+        if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+            $errores[] = 'Ingresa un correo electrónico válido.';
+        }
+        if ($password === '') {
+            $errores[] = 'La contraseña es obligatoria.';
+        }
+        if ($errores !== []) {
+            return ['ok' => false, 'errores' => $errores];
+        }
+
+        try {
+            $maestro = $this->maestroModel->buscarPorCorreo($correo);
+            if ($maestro === null || $maestro['estado'] !== 'Activo' || !password_verify($password, $maestro['password_hash'])) {
+                return ['ok' => false, 'errores' => ['Correo o contraseña incorrectos.']];
+            }
+
+            session_regenerate_id(true);
+            $_SESSION['maestro_id'] = (int)$maestro['id_docente'];
+            $_SESSION['maestro_nombre'] = $maestro['nombre'];
+            $_SESSION['maestro_correo'] = $maestro['correo'];
+            return ['ok' => true, 'errores' => []];
+        } catch (Throwable $exception) {
+            error_log($exception->getMessage());
+            return ['ok' => false, 'errores' => ['No fue posible iniciar sesión.']];
+        }
+    }
+
     public function registrar(): array
+
     {
         $datos = [
             'nombre' => trim($_POST['nombre'] ?? ''),

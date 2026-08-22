@@ -9,7 +9,7 @@ $nombreAdministrador = $_SESSION['administrador_nombre'] ?? 'Administrador';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Registrar administrador | Kairos</title>
-    <link rel="stylesheet" href="../../public/CSS/main.css">
+    <link rel="stylesheet" href="../CSS/main.css">
 </head>
 <body>
 <main class="card">
