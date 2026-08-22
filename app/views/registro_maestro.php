@@ -9,7 +9,7 @@ $mensaje = $resultado['mensaje'] ?? null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de maestros | Kairos</title>
-    <link rel="stylesheet" href="../../public/CSS/main.css">
+    <link rel="stylesheet" href="../CSS/main.css">
 </head>
 <body>
     <main class="tarjeta">
@@ -36,7 +36,7 @@ $mensaje = $resultado['mensaje'] ?? null;
 $scriptActual = $_SERVER['SCRIPT_NAME'] ?? '';
 $actionFormulario = strpos($scriptActual, '/public/') !== false
     ? basename($scriptActual)
-    : '../../public/accesos/registro_maestro.php';
+    : '../../Public/accesos/registro_maestro.php';
 ?>
         <form method="POST" action="<?= htmlspecialchars($actionFormulario, ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="accion" value="registrar">

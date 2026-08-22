@@ -10,7 +10,23 @@ class Maestro
         $this->connection->set_charset('utf8mb4');
     }
 
+        public function buscarPorCorreo(string $correo): ?array
+    {
+        $sql = "SELECT id_docente, nombre, correo, password_hash, estado FROM docentes WHERE correo = ? LIMIT 1";
+        $statement = $this->connection->prepare($sql);
+        if (!$statement) {
+            throw new RuntimeException('No fue posible preparar la búsqueda del maestro: ' . $this->connection->error);
+        }
+        $statement->bind_param('s', $correo);
+        $statement->execute();
+        $resultado = $statement->get_result();
+        $maestro = $resultado->fetch_assoc() ?: null;
+        $statement->close();
+        return $maestro;
+    }
+
     public function correoExiste(string $correo): bool
+
     {
         $sql = "SELECT id_docente FROM docentes WHERE correo = ? LIMIT 1";
         $statement = $this->connection->prepare($sql);
