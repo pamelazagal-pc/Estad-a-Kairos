@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'login
     $resultado = $controller->iniciarSesion();
 
     if ($resultado['ok']) {
-        header('Location: ../dashboard.php');
+        header('Location: panel_administrador.php');
         exit;
     }
 }

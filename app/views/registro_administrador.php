@@ -29,6 +29,7 @@ $nombreAdministrador = $_SESSION['administrador_nombre'] ?? 'Administrador';
         <input id="confirmar_password" name="confirmar_password" type="password" minlength="8" required>
         <button type="submit">Registrar administrador</button>
     </form>
+    <a class="boton boton-secundario" href="panel_administrador.php">Regresar al panel</a>
 </main>
 </body>
 </html>

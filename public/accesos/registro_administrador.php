@@ -14,6 +14,11 @@ $controller = new AdministradorController($connection);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'registrar_secundario') {
     $resultado = $controller->registrarSecundario();
+
+    if ($resultado['ok']) {
+        header('Location: panel_administrador.php');
+        exit;
+    }
 }
 
 require_once __DIR__ . '/../../app/views/registro_administrador.php';

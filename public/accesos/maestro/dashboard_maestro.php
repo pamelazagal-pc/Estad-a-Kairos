@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['administrador_id']) && !isset($_SESSION['maestro_id'])) {
+if (!isset($_SESSION['maestro_id'])) {
     header('Location: ../login_administrador.php');
     exit;
 }

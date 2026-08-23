@@ -9,7 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Acceso del maestro | Kairos</title>
-    <link rel="stylesheet" href="../../CSS/main.css">
+    <link rel="stylesheet" href="../../../CSS/main.css?v=maestro-1">
 </head>
 <body>
 <main class="card">

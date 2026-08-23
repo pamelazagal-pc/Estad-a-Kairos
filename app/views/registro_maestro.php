@@ -89,6 +89,7 @@ $actionFormulario = strpos($scriptActual, '/public/') !== false
 
             <button type="submit">Registrar maestro</button>
         </form>
+        <a class="boton boton-secundario" href="panel_administrador.php">Regresar al panel</a>
     </main>
 </body>
 </html>
