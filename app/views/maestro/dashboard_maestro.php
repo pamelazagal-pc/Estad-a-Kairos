@@ -31,8 +31,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Emotion Monitor – maestro | UPEMOR</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../CSS/maestro_dashboard.css?v=maestro-dashboard-1" />
-
+  <link rel="stylesheet" href="../../CSS/dashboard_maestro.css" />
 </head>
 <body>
 
@@ -60,7 +59,7 @@
 
     <div class="nav-label">Registros</div>
 
-    <a class="nav-item nav-link" href="bitacora_maestro.php">
+    <div class="nav-item has-notification" onclick="this.classList.toggle('active')">
       <svg class="nav-icon icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       Bitácora emocional
     </a>
@@ -91,7 +90,7 @@
 
   <!-- TOPBAR -->
   <header class="topbar">
-    <div class="topbar-title">EMOTION MONITOR – MAESTRO</div>
+    <div class="topbar-title">HOLA – MAESTRO</div>
     <div class="topbar-right">
 <span class="topbar-user">Bienvenido/a, <?= htmlspecialchars($maestro['nombre'] ?? $_SESSION['maestro_nombre'] ?? 'Maestro', ENT_QUOTES, 'UTF-8') ?></span>
       <a class="btn-logout" href="logout_maestro.php">Cerrar Sesión</a>
@@ -142,13 +141,9 @@
 
     <!-- ── SEMÁFORO TABLE ── -->
     <div class="card">
-      <div class="card-header">
-        <span class="section-heading">Monitoreo de Semáforos Emocionales Grupal</span>
-      </div>
       <table class="semaforo-table">
         <thead>
           <tr>
-            <th>Foto</th>
             <th>Nombre Alumno</th>
             <th>Estado Actual</th>
             <th>Última Actualización</th>
@@ -214,9 +209,8 @@
           <button class="btn-save" type="submit">
             <span>Guardar Nota</span>
           </button>
-          <button class="btn-discard" type="button" onclick="descartar()">Descartar</button>
-          <?php if ($mensaje): ?><span id="msg-ok" class="message-success">✓ <?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
-          <?php if ($errores !== []): ?><span class="message-error"><?= htmlspecialchars(implode(' ', $errores), ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
+          <button class="btn-discard" onclick="descartar()">Descartar</button>
+          <span id="msg-ok" class="msg-ok">✓ Incidencia registrada</span>
         </div>
         </form>
       </div>
@@ -227,23 +221,15 @@
         <div class="timer-display" id="timer-display">00:00</div>
         <div class="timer-status" id="timer-status">Listo para iniciar</div>
 
-        <div class="timer-config">
-          <div class="form-group timer-config-group">
-            <label class="form-label timer-config-label">Grupo</label>
-            <select id="timer-grupo" class="form-select timer-config-control" required>
-              <option value="">Seleccionar grupo</option>
-              <?php foreach ($grupos as $grupo): ?>
-                <option value="<?= (int)$grupo['id_grupo'] ?>"><?= htmlspecialchars($grupo['nombre_grupo'] . ' — ' . $grupo['ciclo_escolar'], ENT_QUOTES, 'UTF-8') ?></option>
-              <?php endforeach; ?>
-            </select>
+        <div class="timer-settings">
+          <div class="form-group timer-setting timer-setting-duration">
+            <label class="form-label">Duración (min)</label>
+            <input id="timer-input" type="number" min="1" max="120" value="40"
+              class="form-select timer-input-control" />
           </div>
-          <div class="form-group timer-config-duration">
-            <label class="form-label timer-config-label">Duración (min)</label>
-            <input id="timer-input" type="number" min="1" max="120" value="40" class="form-select timer-config-control" />
-          </div>
-          <div class="form-group timer-config-level">
-            <label class="form-label timer-config-label">Nivel Irritabilidad</label>
-            <select id="timer-nivel" class="form-select timer-config-control">
+          <div class="form-group timer-setting timer-setting-level">
+            <label class="form-label">Nivel Irritabilidad</label>
+            <select id="timer-nivel" class="form-select timer-select-control">
               <option value="1">Bajo</option>
               <option value="2" selected>Medio</option>
               <option value="3">Alto</option>
@@ -307,10 +293,12 @@ function renderAlumnos() {
     const inicial = a.nombre.split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase();
     tbody.innerHTML += `
       <tr class="${rowClass}">
-        <td><div class="avatar">${inicial}</div></td>
-        <td><div class="student-name">${a.nombre}</div><small class="student-group">${a.grupo}</small></td>
-        <td><span class="dot ${a.estado}" title="${blabel}"></span><small class="status-label">${blabel}</small></td>
-        <td class="last-update">${a.hora}</td>
+        <td>
+          <div class="avatar">${a.inicial}</div>
+        </td>
+        <td><div class="student-name">${a.nombre}</div></td>
+        <td><span class="dot ${a.estado}" title="${blabel}"></span></td>
+        <td class="hora-cell">${a.hora}</td>
         <td><span class="badge ${bc}">${a.reg}</span></td>
         <td><div class="action-btns"><button class="action-btn" title="Seleccionar alumno" onclick="editAlumno(${i})"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button></div></td>
       </tr>`;

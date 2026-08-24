@@ -1,12 +1,21 @@
 :root {
-    --azul: #1d4ed8;
-    --azul-oscuro: #1e3a8a;
-    --fondo: #f1f5f9;
-    --texto: #1e293b;
-    --error-fondo: #fee2e2;
-    --error-texto: #991b1b;
-    --exito-fondo: #dcfce7;
-    --exito-texto: #166534;
+    --azul: #009b82;
+    --azul-oscuro: #00705e;
+    --fondo: #f4f6f8;
+    --texto: #1c2b36;
+    --error-fondo: #ffebee;
+    --error-texto: #e53935;
+    --exito-fondo: #e8f5e9;
+    --exito-texto: #43a047;
+    --morado: #6b3fa0;
+    --morado-oscuro: #4e2d78;
+    --morado-claro: #f0eaf8;
+    --verde-claro: #e6f5f2;
+    --amarillo: #f9a825;
+    --amarillo-claro: #fff8e1;
+    --superficie: #ffffff;
+    --borde: #e0e6ed;
+    --texto-secundario: #6b7f8e;
 }
 
 * {
@@ -28,7 +37,7 @@ body {
 .card {
     width: min(100%, 520px);
     padding: 32px;
-    background: #ffffff;
+    background: var(--superficie);
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
 }
@@ -36,13 +45,13 @@ body {
 h1 {
     margin-top: 0;
     margin-bottom: 8px;
-    color: var(--azul-oscuro);
+    color: var(--morado-oscuro);
 }
 
 .descripcion,
 .top,
 .card p {
-    color: #64748b;
+    color: var(--texto-secundario);
 }
 
 .campo,
@@ -59,13 +68,13 @@ label {
 input {
     width: 100%;
     padding: 12px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--borde);
     border-radius: 8px;
     font-size: 16px;
 }
 
 input:focus {
-    outline: 2px solid #93c5fd;
+    outline: 2px solid #80cbc4;
     border-color: var(--azul);
 }
 
@@ -115,7 +124,7 @@ button:hover {
 .ayuda {
     display: block;
     margin-top: 5px;
-    color: #64748b;
+    color: var(--texto-secundario);
     font-size: 13px;
 }
 
