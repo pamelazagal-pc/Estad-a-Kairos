@@ -1,6 +1,27 @@
 <?php
     $errores = $resultado['errores'] ?? [];
     $mensaje = $resultado['mensaje'] ?? null;
+    $datos = $datos ?? ($resultado['datos'] ?? []);
+    $maestro = $datos['maestro'] ?? [];
+    $grupos = $datos['grupos'] ?? [];
+    $alumnosDashboard = $datos['alumnos'] ?? [];
+    $kpis = $datos['kpis'] ?? ['alumnos' => 0, 'atencion' => 0, 'crisis' => 0, 'contenciones' => 0];
+    $grupoSeleccionado = (int)($datos['grupo_seleccionado'] ?? 0);
+    $grupoActivo = null;
+    foreach ($grupos as $grupo) { if ((int)$grupo['id_grupo'] === $grupoSeleccionado) { $grupoActivo = $grupo; break; } }
+    $nombreGrupo = $grupoActivo ? ($grupoActivo['nombre_grupo'] . ' — ' . $grupoActivo['ciclo_escolar']) : (count($grupos) === 1 ? ($grupos[0]['nombre_grupo'] . ' — ' . $grupos[0]['ciclo_escolar']) : (count($grupos) > 1 ? count($grupos) . ' grupos asignados' : 'Sin grupos asignados'));
+    $alumnosJson = json_encode(array_map(static function (array $alumno): array {
+        $estado = strtolower((string)($alumno['estado_semaforo'] ?? 'Verde'));
+        return [
+            'id' => (int)$alumno['id_alumno'],
+            'nombre' => $alumno['nombre_completo'],
+            'estado' => $estado === 'amarillo' ? 'yellow' : ($estado === 'rojo' ? 'red' : 'green'),
+            'grupo' => $alumno['grupo'],
+            'reg' => $alumno['ultima_emocion'] ?: 'Sin registro',
+            'accion' => $alumno['ultima_accion'] ?: '',
+            'hora' => $alumno['ultima_actualizacion'] ?: 'Sin registro'
+        ];
+    }, $alumnosDashboard), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 ?>
 
 <!DOCTYPE html>
@@ -10,343 +31,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Emotion Monitor – maestro | UPEMOR</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    /* ── TOKENS ── */
-    :root {
-      --upemor-green:   #009B82;
-      --upemor-green-d: #00705E;
-      --upemor-green-l: #E6F5F2;
-      --upemor-purple:  #6B3FA0;
-      --upemor-purple-d:#4E2D78;
-      --upemor-purple-l:#F0EAF8;
-      --sidebar-bg:     #1A3A4A;
-      --sidebar-hover:  #234D62;
-      --sidebar-active: #00897B;
+  <link rel="stylesheet" href="../../CSS/maestro_dashboard.css?v=maestro-dashboard-1" />
 
-      --red-500:    #E53935;
-      --red-100:    #FFEBEE;
-      --yellow-500: #F9A825;
-      --yellow-100: #FFF8E1;
-      --green-500:  #43A047;
-      --green-100:  #E8F5E9;
-
-      --bg:         #F4F6F8;
-      --surface:    #FFFFFF;
-      --border:     #E0E6ED;
-      --text-main:  #1C2B36;
-      --text-muted: #6B7F8E;
-      --text-light: #9BAEBE;
-
-      --radius-md: 10px;
-      --radius-lg: 14px;
-      --shadow-card: 0 2px 10px rgba(0,0,0,.07);
-    }
-
-    /* ── RESET ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text-main);
-      height: 100vh;
-      display: flex;
-      overflow: hidden;
-    }
-
-    /* ── SIDEBAR ── */
-    .sidebar {
-      width: 220px;
-      min-width: 220px;
-      background: var(--sidebar-bg);
-      display: flex;
-      flex-direction: column;
-      padding: 0;
-      color: #fff;
-    }
-    .sidebar-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 20px 18px 16px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-    }
-    .logo-mark {
-      width: 36px; height: 36px;
-      background: var(--upemor-green);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800; font-size: 17px; color: #fff;
-      flex-shrink: 0;
-    }
-    .logo-name {
-      font-family: 'Nunito', sans-serif;
-      font-size: 13px; font-weight: 800;
-      letter-spacing: .4px; color: #fff; line-height: 1.2;
-    }
-    .logo-sub { font-size: 10px; font-weight: 400; opacity: .6; }
-
-    .sidebar-nav { flex: 1; padding: 12px 0; }
-    .nav-label {
-      font-size: 9px; font-weight: 700; letter-spacing: 1.2px;
-      text-transform: uppercase; color: rgba(255,255,255,.35);
-      padding: 10px 18px 4px;
-    }
-    .nav-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 18px; cursor: pointer;
-      font-size: 12.5px; font-weight: 500;
-      color: rgba(255,255,255,.70);
-      border-left: 3px solid transparent;
-      transition: background .15s, color .15s, border-color .15s;
-      position: relative;
-    }
-    .nav-item:hover { background: var(--sidebar-hover); color: #fff; }
-    .nav-item.active {
-      background: var(--sidebar-hover);
-      color: #fff;
-      border-left-color: var(--upemor-green);
-    }
-    .nav-item .nav-icon {
-      width: 16px; height: 16px; opacity: .7; flex-shrink: 0;
-    }
-    .nav-item.active .nav-icon { opacity: 1; }
-    .nav-sub { font-size: 10px; opacity: .5; margin-left: auto; }
-
-    /* ── TOPBAR ── */
-    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .topbar {
-      background: var(--upemor-green);
-      color: #fff;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      height: 56px;
-      flex-shrink: 0;
-    }
-    .topbar-title {
-      font-family: 'Nunito', sans-serif;
-      font-size: 17px; font-weight: 800;
-      letter-spacing: .5px;
-    }
-    .topbar-right { display: flex; align-items: center; gap: 14px; }
-    .topbar-user { font-size: 12.5px; opacity: .9; }
-    .btn-logout {
-      background: rgba(255,255,255,.18);
-      color: #fff; border: 1px solid rgba(255,255,255,.3);
-      padding: 5px 14px; border-radius: 6px;
-      font-size: 12px; font-weight: 600; cursor: pointer;
-      transition: background .15s;
-    }
-    .btn-logout:hover { background: rgba(255,255,255,.28); }
-
-    /* ── CONTENT AREA ── */
-    .content {
-      flex: 1; overflow-y: auto;
-      padding: 20px 24px 24px;
-      display: flex; flex-direction: column; gap: 18px;
-    }
-
-    /* ── SECTION HEADER ── */
-    .section-heading {
-      font-family: 'Nunito', sans-serif;
-      font-size: 14px; font-weight: 800;
-      letter-spacing: .3px; color: var(--text-main);
-      padding-bottom: 2px;
-      border-bottom: 2px solid var(--upemor-green);
-      display: inline-block;
-    }
-
-    /* ── KPI CARDS ── */
-    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-    .kpi-card {
-      background: var(--surface);
-      border-radius: var(--radius-md);
-      padding: 14px 18px 12px;
-      box-shadow: var(--shadow-card);
-      border-top: 3px solid transparent;
-      display: flex; flex-direction: column; gap: 4px;
-    }
-    .kpi-card.blue  { border-top-color: #1E88E5; }
-    .kpi-card.amber { border-top-color: var(--yellow-500); }
-    .kpi-card.red   { border-top-color: var(--red-500); }
-    .kpi-card.teal  { border-top-color: var(--upemor-green); }
-    .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
-    .kpi-value {
-      font-family: 'Nunito', sans-serif;
-      font-size: 28px; font-weight: 800; color: var(--text-main); line-height: 1;
-    }
-
-    /* ── SEMÁFORO TABLE ── */
-    .card {
-      background: var(--surface);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-card);
-      overflow: hidden;
-    }
-    .card-header {
-      padding: 14px 20px 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .semaforo-table { width: 100%; border-collapse: collapse; }
-    .semaforo-table th {
-      font-size: 10.5px; font-weight: 700;
-      color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px;
-      padding: 9px 16px;
-      background: #F9FAFB;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-    .semaforo-table td {
-      padding: 10px 16px;
-      font-size: 13px;
-      border-bottom: 1px solid #F1F4F7;
-      vertical-align: middle;
-    }
-    .semaforo-table tr:last-child td { border-bottom: none; }
-    .semaforo-table tr:hover td { background: #FAFBFC; }
-    .semaforo-table tr.highlight-red td { background: var(--red-100); }
-    .semaforo-table tr.highlight-yellow td { background: var(--yellow-100); }
-
-    .student-cell { display: flex; align-items: center; gap: 10px; }
-    .avatar {
-      width: 34px; height: 34px; border-radius: 50%;
-      object-fit: cover; flex-shrink: 0;
-      background: var(--upemor-green-l);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; color: var(--upemor-green-d);
-    }
-    .student-name { font-weight: 600; font-size: 13px; }
-
-    .dot {
-      width: 18px; height: 18px; border-radius: 50%;
-      display: inline-block; flex-shrink: 0;
-      box-shadow: 0 1px 4px rgba(0,0,0,.2);
-    }
-    .dot.green  { background: var(--green-500); }
-    .dot.yellow { background: var(--yellow-500); }
-    .dot.red    { background: var(--red-500); }
-
-    .badge {
-      display: inline-block; padding: 2px 8px; border-radius: 20px;
-      font-size: 11px; font-weight: 600;
-    }
-    .badge.red    { background: var(--red-100);    color: var(--red-500); }
-    .badge.yellow { background: var(--yellow-100); color: #B8860B; }
-    .badge.green  { background: var(--green-100);  color: var(--green-500); }
-    .badge.teal   { background: var(--upemor-green-l); color: var(--upemor-green-d); }
-
-    .action-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--text-muted); padding: 4px;
-      border-radius: 5px; transition: color .15s, background .15s;
-    }
-    .action-btn:hover { color: var(--upemor-green); background: var(--upemor-green-l); }
-    .action-btns { display: flex; gap: 4px; }
-
-    /* ── BOTTOM ROW ── */
-    .bottom-row { display: grid; grid-template-columns: 1fr 340px; gap: 14px; }
-
-    /* ── QUICK FORM ── */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 16px 18px; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-label { font-size: 11px; font-weight: 600; color: var(--text-muted); }
-    .form-select, .form-textarea {
-      border: 1.5px solid var(--border);
-      border-radius: 7px;
-      padding: 7px 10px;
-      font-size: 12.5px;
-      color: var(--text-main);
-      background: #FAFBFC;
-      outline: none;
-      font-family: 'Inter', sans-serif;
-      transition: border-color .15s;
-    }
-    .form-select:focus, .form-textarea:focus { border-color: var(--upemor-green); }
-    .form-textarea {
-      resize: none; height: 70px;
-      grid-column: 1 / -1;
-      margin-top: 2px;
-    }
-    .form-actions {
-      display: flex; gap: 8px;
-      padding: 0 18px 16px;
-      align-items: center;
-    }
-    .btn-save {
-      background: var(--upemor-green);
-      color: #fff; border: none; padding: 8px 18px;
-      border-radius: 7px; font-size: 12.5px; font-weight: 700;
-      cursor: pointer; transition: background .15s;
-    }
-    .btn-save:hover { background: var(--upemor-green-d); }
-    .btn-discard {
-      background: #ECEFF1;
-      color: var(--text-muted); border: none; padding: 8px 16px;
-      border-radius: 7px; font-size: 12.5px; font-weight: 600;
-      cursor: pointer; transition: background .15s;
-    }
-    .btn-discard:hover { background: #DDE3E9; }
-
-    /* ── TIMER ── */
-    .timer-card {
-      background: var(--surface);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-card);
-      display: flex; flex-direction: column; align-items: center;
-      padding: 18px 20px 16px; gap: 4px;
-    }
-    .timer-label {
-      font-size: 11px; font-weight: 700; letter-spacing: .8px;
-      text-transform: uppercase; color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-    .timer-display {
-      font-family: 'Nunito', sans-serif;
-      font-size: 56px; font-weight: 800;
-      color: var(--text-main);
-      letter-spacing: 2px; line-height: 1;
-    }
-    .timer-display.running { color: var(--upemor-green); }
-    .timer-display.warning { color: var(--red-500); }
-    .timer-status {
-      font-size: 11px; color: var(--text-muted); margin-top: 4px;
-      min-height: 16px;
-    }
-    .timer-controls {
-      display: flex; gap: 10px; margin-top: 12px;
-    }
-    .timer-btn {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 4px; background: none; border: none; cursor: pointer;
-      color: var(--text-muted);
-      transition: color .15s;
-    }
-    .timer-btn:hover { color: var(--upemor-green); }
-    .timer-btn.disabled { opacity: .4; pointer-events: none; }
-    .timer-btn-icon {
-      width: 42px; height: 42px; border-radius: 50%;
-      background: #F1F4F8;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .15s;
-    }
-    .timer-btn:hover .timer-btn-icon { background: var(--upemor-green-l); }
-    .timer-btn-label { font-size: 10px; font-weight: 600; }
-
-    /* ── SCROLLBAR ── */
-    .content::-webkit-scrollbar { width: 5px; }
-    .content::-webkit-scrollbar-track { background: transparent; }
-    .content::-webkit-scrollbar-thumb { background: #C8D4DC; border-radius: 4px; }
-
-    /* ── NOTIFICATION DOT ── */
-    .notif-dot {
-      width: 7px; height: 7px; background: var(--red-500);
-      border-radius: 50%; position: absolute; right: 14px; top: 50%; margin-top: -3.5px;
-    }
-
-    /* SVG icons inline */
-    .icon { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .icon-lg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  </style>
 </head>
 <body>
 
@@ -374,11 +60,10 @@
 
     <div class="nav-label">Registros</div>
 
-    <div class="nav-item" style="position:relative" onclick="this.classList.toggle('active')">
+    <a class="nav-item nav-link" href="bitacora_maestro.php">
       <svg class="nav-icon icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Bitácora de Incidentes
-      <div class="notif-dot"></div>
-    </div>
+      Bitácora emocional
+    </a>
 
     <div class="nav-label">Catálogos</div>
 
@@ -408,8 +93,8 @@
   <header class="topbar">
     <div class="topbar-title">EMOTION MONITOR – MAESTRO</div>
     <div class="topbar-right">
-      <span class="topbar-user">Bienvenida, Prof. Delgado Blanca</span>
-      <button class="btn-logout">Cerrar Sesión</button>
+<span class="topbar-user">Bienvenido/a, <?= htmlspecialchars($maestro['nombre'] ?? $_SESSION['maestro_nombre'] ?? 'Maestro', ENT_QUOTES, 'UTF-8') ?></span>
+      <a class="btn-logout" href="logout_maestro.php">Cerrar Sesión</a>
     </div>
   </header>
 
@@ -418,26 +103,40 @@
 
     <!-- ── HEADING ── -->
     <div>
-      <span class="section-heading">Panel de Control de Aula — 6º Grado B</span>
+      <span class="section-heading">Panel de Control de Aula — <?= htmlspecialchars($nombreGrupo, ENT_QUOTES, 'UTF-8') ?></span>
+    </div>
+
+    <div class="group-picker">
+      <div class="group-picker-title">Mis grupos asignados</div>
+      <div class="group-picker-grid">
+        <?php foreach ($grupos as $grupo): ?>
+          <a class="group-card <?= (int)$grupo['id_grupo'] === $grupoSeleccionado || ($grupoSeleccionado === 0 && count($grupos) === 1) ? 'selected' : '' ?>" href="?id_grupo=<?= (int)$grupo['id_grupo'] ?>">
+            <strong><?= htmlspecialchars($grupo['nombre_grupo'], ENT_QUOTES, 'UTF-8') ?></strong>
+            <span>Ciclo <?= htmlspecialchars($grupo['ciclo_escolar'], ENT_QUOTES, 'UTF-8') ?></span>
+            <small>Ver alumnos asignados →</small>
+          </a>
+        <?php endforeach; ?>
+        <?php if ($grupos === []): ?><div class="empty-group">No tienes grupos asignados actualmente.</div><?php endif; ?>
+      </div>
     </div>
 
     <!-- ── KPIs ── -->
     <div class="kpi-row">
       <div class="kpi-card blue">
         <div class="kpi-label">Total Alumnos</div>
-        <div class="kpi-value">28</div>
+        <div class="kpi-value"><?= (int)$kpis['alumnos'] ?></div>
       </div>
       <div class="kpi-card amber">
         <div class="kpi-label">Atención Pendiente</div>
-        <div class="kpi-value">3</div>
+        <div class="kpi-value"><?= (int)$kpis['atencion'] ?></div>
       </div>
       <div class="kpi-card red">
         <div class="kpi-label">Crisis Reportadas Hoy</div>
-        <div class="kpi-value">1</div>
+        <div class="kpi-value"><?= (int)$kpis['crisis'] ?></div>
       </div>
       <div class="kpi-card teal">
         <div class="kpi-label">Acciones de Contención</div>
-        <div class="kpi-value">5</div>
+        <div class="kpi-value"><?= (int)$kpis['contenciones'] ?></div>
       </div>
     </div>
 
@@ -457,8 +156,10 @@
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="alumnos-tbody">
-          <!-- filas generadas por JS -->
+<tbody id="alumnos-tbody">
+          <?php if ($alumnosDashboard === []): ?>
+            <tr><td colspan="6" class="empty-row">No hay alumnos activos en tus grupos asignados.</td></tr>
+          <?php endif; ?>
         </tbody>
       </table>
     </div>
@@ -471,23 +172,22 @@
         <div class="card-header">
           <span class="section-heading">Registro de Incidencia Rápido</span>
         </div>
+        <form method="post" class="incident-form" id="incident-form">
+          <input type="hidden" name="accion" value="registrar_incidencia">
+          <?php if ($grupoSeleccionado > 0): ?><input type="hidden" name="id_grupo" value="<?= $grupoSeleccionado ?>"><?php endif; ?>
         <div class="form-grid">
           <div class="form-group">
             <label class="form-label">Alumno</label>
-            <select class="form-select" id="sel-alumno">
+            <select class="form-select" id="sel-alumno" name="id_alumno" required>
               <option value="">— Seleccionar Alumno —</option>
-              <option>Martín Blanca Lucía</option>
-              <option>Martínez Blanca Uri</option>
-              <option>Poirier Blanca Ana</option>
-              <option>Joranca Delgado Blanca</option>
-              <option>Crata Blanca Jorge</option>
-              <option>García Ramírez Sofía</option>
-              <option>López Torres Andrés</option>
+<?php foreach ($alumnosDashboard as $alumno): ?>
+                <option value="<?= (int)$alumno['id_alumno'] ?>"><?= htmlspecialchars($alumno['nombre_completo'], ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars($alumno['grupo'], ENT_QUOTES, 'UTF-8') ?></option>
+              <?php endforeach; ?>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Tipo Contención</label>
-            <select class="form-select" id="sel-tipo">
+            <select class="form-select" id="sel-tipo" name="accion_contencion" required>
               <option value="">— Tipo —</option>
               <option>Pausa Activa</option>
               <option>Diálogo de Contención</option>
@@ -498,7 +198,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Emoción Detectada</label>
-            <select class="form-select" id="sel-emocion">
+            <select class="form-select" id="sel-emocion" name="emocion" required>
               <option value="">— Emoción —</option>
               <option>Frustración</option>
               <option>Irritabilidad</option>
@@ -508,15 +208,17 @@
               <option>Apatía</option>
             </select>
           </div>
-          <textarea class="form-textarea form-select" id="txt-desc" placeholder="Descripción de la situación (máx. 5 líneas): detonante identificado, contexto del aula, acción tomada..."></textarea>
+          <textarea class="form-textarea form-select" id="txt-desc" name="descripcion" maxlength="1000" required placeholder="Descripción de la situación (máx. 5 líneas): detonante identificado, contexto del aula, acción tomada..."></textarea>
         </div>
         <div class="form-actions">
-          <button class="btn-save" onclick="guardarNota()">
+          <button class="btn-save" type="submit">
             <span>Guardar Nota</span>
           </button>
-          <button class="btn-discard" onclick="descartar()">Descartar</button>
-          <span id="msg-ok" style="font-size:12px;color:var(--upemor-green);font-weight:600;display:none;">✓ Incidencia registrada</span>
+          <button class="btn-discard" type="button" onclick="descartar()">Descartar</button>
+          <?php if ($mensaje): ?><span id="msg-ok" class="message-success">✓ <?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
+          <?php if ($errores !== []): ?><span class="message-error"><?= htmlspecialchars(implode(' ', $errores), ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
         </div>
+        </form>
       </div>
 
       <!-- TEMPORIZADOR -->
@@ -525,17 +227,25 @@
         <div class="timer-display" id="timer-display">00:00</div>
         <div class="timer-status" id="timer-status">Listo para iniciar</div>
 
-        <div style="display:flex;gap:10px;margin-top:10px;align-items:center;">
-          <div class="form-group" style="width:110px;">
-            <label class="form-label" style="font-size:10px;">Duración (min)</label>
-            <input id="timer-input" type="number" min="1" max="120" value="40"
-              class="form-select" style="padding:5px 8px;font-size:13px;width:100%;" />
+        <div class="timer-config">
+          <div class="form-group timer-config-group">
+            <label class="form-label timer-config-label">Grupo</label>
+            <select id="timer-grupo" class="form-select timer-config-control" required>
+              <option value="">Seleccionar grupo</option>
+              <?php foreach ($grupos as $grupo): ?>
+                <option value="<?= (int)$grupo['id_grupo'] ?>"><?= htmlspecialchars($grupo['nombre_grupo'] . ' — ' . $grupo['ciclo_escolar'], ENT_QUOTES, 'UTF-8') ?></option>
+              <?php endforeach; ?>
+            </select>
           </div>
-          <div class="form-group" style="width:130px;margin-top:0;">
-            <label class="form-label" style="font-size:10px;">Nivel Irritabilidad</label>
-            <select id="timer-nivel" class="form-select" style="padding:5px 8px;font-size:12px;">
+          <div class="form-group timer-config-duration">
+            <label class="form-label timer-config-label">Duración (min)</label>
+            <input id="timer-input" type="number" min="1" max="120" value="40" class="form-select timer-config-control" />
+          </div>
+          <div class="form-group timer-config-level">
+            <label class="form-label timer-config-label">Nivel Irritabilidad</label>
+            <select id="timer-nivel" class="form-select timer-config-control">
               <option value="1">Bajo</option>
-              <option value="2" selected>Moderado</option>
+              <option value="2" selected>Medio</option>
               <option value="3">Alto</option>
             </select>
           </div>
@@ -563,7 +273,7 @@
         </div>
 
         <!-- pausa activa alerta -->
-        <div id="break-alert" style="display:none;background:var(--yellow-100);border:1.5px solid var(--yellow-500);border-radius:8px;padding:8px 12px;margin-top:10px;font-size:11.5px;color:#7B5800;font-weight:600;text-align:center;">
+        <div id="break-alert" class="break-alert">
           🐾 ¡Momento de pausa activa!<br/>La mascota está lista.
         </div>
       </div>
@@ -572,17 +282,11 @@
   </div><!-- /content -->
 </div><!-- /main -->
 
+<audio id="break-finished-audio" preload="auto" src="audio_pausa.php"></audio>
+
 <script>
 /* ── DATOS DE ALUMNOS ── */
-const alumnos = [
-  { nombre: "Martín Blanca Lucía",   inicial:"ML", estado:"green",  reg:"Contención",           hora:"28/12/2022, 12:35 AM" },
-  { nombre: "Martínez Blanca Uri",    inicial:"MU", estado:"yellow", reg:"Registro de Emoción",  hora:"28/12/2022, 12:35 AM" },
-  { nombre: "Poirier Blanca Ana",     inicial:"PA", estado:"red",    reg:"Semáforo Rojo",        hora:"28/12/2022, 12:37 AM" },
-  { nombre: "Joranca Delgado Blanca", inicial:"JD", estado:"yellow", reg:"Registro de Emoción",  hora:"28/12/2022, 12:28 AM" },
-  { nombre: "Crata Blanca Jorge",     inicial:"CJ", estado:"green",  reg:"Registro de Emoción",  hora:"28/12/2022, 12:28 AM" },
-  { nombre: "García Ramírez Sofía",   inicial:"GS", estado:"green",  reg:"Pausa Activa",         hora:"28/12/2022, 12:20 AM" },
-  { nombre: "López Torres Andrés",    inicial:"LA", estado:"yellow", reg:"Registro de Emoción",  hora:"28/12/2022, 12:15 AM" },
-];
+const alumnos = <?= $alumnosJson ?: '[]' ?>;
 
 const badgeMap = {
   green:  ["green",  "Verde – Estable"],
@@ -593,35 +297,29 @@ const badgeMap = {
 function renderAlumnos() {
   const tbody = document.getElementById("alumnos-tbody");
   tbody.innerHTML = "";
+  if (alumnos.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-row">No hay alumnos activos en tus grupos asignados.</td></tr>';
+    return;
+  }
   alumnos.forEach((a, i) => {
-    const [bc, blabel] = badgeMap[a.estado];
+    const [bc, blabel] = badgeMap[a.estado] || badgeMap.green;
     const rowClass = a.estado === "red" ? "highlight-red" : a.estado === "yellow" ? "highlight-yellow" : "";
+    const inicial = a.nombre.split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase();
     tbody.innerHTML += `
       <tr class="${rowClass}">
-        <td>
-          <div class="avatar">${a.inicial}</div>
-        </td>
-        <td><div class="student-name">${a.nombre}</div></td>
-        <td><span class="dot ${a.estado}" title="${blabel}"></span></td>
-        <td style="color:var(--text-muted);font-size:12px;">${a.hora}</td>
+        <td><div class="avatar">${inicial}</div></td>
+        <td><div class="student-name">${a.nombre}</div><small class="student-group">${a.grupo}</small></td>
+        <td><span class="dot ${a.estado}" title="${blabel}"></span><small class="status-label">${blabel}</small></td>
+        <td class="last-update">${a.hora}</td>
         <td><span class="badge ${bc}">${a.reg}</span></td>
-        <td>
-          <div class="action-btns">
-            <button class="action-btn" title="Ver detalle">
-              <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </button>
-            <button class="action-btn" title="Editar registro" onclick="editAlumno(${i})">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-          </div>
-        </td>
+        <td><div class="action-btns"><button class="action-btn" title="Seleccionar alumno" onclick="editAlumno(${i})"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button></div></td>
       </tr>`;
   });
 }
 
 function editAlumno(i) {
   const sel = document.getElementById("sel-alumno");
-  sel.value = alumnos[i].nombre;
+  sel.value = String(alumnos[i].id);
   document.getElementById("txt-desc").focus();
 }
 
@@ -666,6 +364,20 @@ let totalSeconds  = 0;
 let elapsed       = 0;
 let running       = false;
 let breakInterval = 0;
+let activeSessionId = null;
+const sessionEndpoint = "sesion_temporizador.php";
+
+async function actualizarSesion(accion) {
+  if (!activeSessionId) return true;
+  const datos = new FormData();
+  datos.append("accion", accion);
+  datos.append("id_sesion", activeSessionId);
+  const respuesta = await fetch(sessionEndpoint, { method: "POST", body: datos });
+  const json = await respuesta.json();
+  if (!json.ok) throw new Error(json.error || "No fue posible actualizar la sesión.");
+  if (accion === "finalizar_sesion" || accion === "interrumpir_sesion") activeSessionId = null;
+  return true;
+}
 
 function fmtTime(s) {
   const m = Math.floor(s / 60).toString().padStart(2, "0");
@@ -673,10 +385,64 @@ function fmtTime(s) {
   return `${m}:${sec}`;
 }
 
-function startTimer() {
+function prepararAudioFin() {
+  const audio = document.getElementById("break-finished-audio");
+  if (!audio) return;
+  audio.muted = true;
+  audio.currentTime = 0;
+  const desbloqueo = audio.play();
+  if (desbloqueo && typeof desbloqueo.then === "function") {
+    desbloqueo.then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.muted = false;
+    }).catch(() => {
+      audio.muted = false;
+    });
+  }
+}
+
+function reproducirAudioFin() {
+  const audio = document.getElementById("break-finished-audio");
+  if (!audio) return;
+  audio.muted = false;
+  audio.currentTime = 0;
+  const reproduccion = audio.play();
+  if (reproduccion && typeof reproduccion.catch === "function") {
+    reproduccion.catch(() => {
+      document.getElementById("timer-status").textContent = "✓ Sesión finalizada — presiona reproducir para escuchar el aviso";
+    });
+  }
+}
+
+async function startTimer() {
   if (running) return;
+  const grupo = document.getElementById("timer-grupo").value;
   const mins  = parseInt(document.getElementById("timer-input").value) || 40;
   const nivel = parseInt(document.getElementById("timer-nivel").value);
+  if (!grupo) {
+    alert("Selecciona el grupo de la sesión.");
+    return;
+  }
+  prepararAudioFin();
+  try {
+    if (activeSessionId) {
+      await actualizarSesion("reanudar_sesion");
+    } else {
+      const datos = new FormData();
+      datos.append("accion", "iniciar_sesion");
+      datos.append("id_grupo", grupo);
+      datos.append("duracion", mins);
+      datos.append("nivel", nivel);
+      const respuesta = await fetch(sessionEndpoint, { method: "POST", body: datos });
+      const json = await respuesta.json();
+      if (!json.ok) throw new Error(json.error || "No fue posible iniciar la sesión.");
+      activeSessionId = json.id_sesion;
+    }
+  } catch (error) {
+    document.getElementById("timer-status").textContent = error.message;
+    return;
+  }
   totalSeconds = mins * 60;
   breakInterval = nivel === 1 ? 20 * 60 : nivel === 2 ? 15 * 60 : 10 * 60;
 
@@ -710,6 +476,10 @@ function startTimer() {
       document.getElementById("timer-display").textContent = "00:00";
       document.getElementById("timer-status").textContent = "✓ Sesión finalizada";
       document.getElementById("timer-display").className = "timer-display";
+      reproducirAudioFin();
+      actualizarSesion("finalizar_sesion").catch(error => {
+        document.getElementById("timer-status").textContent = "Sesión finalizada localmente: " + error.message;
+      });
       document.getElementById("btn-start").classList.remove("disabled");
       document.getElementById("btn-pause").classList.add("disabled");
     }
@@ -726,8 +496,12 @@ function pauseTimer() {
   document.getElementById("timer-display").className = "timer-display";
 }
 
-function resetTimer() {
+async function resetTimer() {
   clearInterval(timerInterval);
+  if (activeSessionId) {
+    try { await actualizarSesion("interrumpir_sesion"); }
+    catch (error) { document.getElementById("timer-status").textContent = error.message; }
+  }
   running = false; elapsed = 0;
   document.getElementById("timer-display").textContent = "00:00";
   document.getElementById("timer-display").className = "timer-display";

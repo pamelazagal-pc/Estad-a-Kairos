@@ -31,6 +31,9 @@ $errorResumen = $errorResumen ?? null;
             <a class="panel-nav-item" href="listado.php?tipo=alumnos"><span>E</span>Alumnos</a>
             <a class="panel-nav-item" href="listado.php?tipo=grupos"><span>G</span>Grupos</a>
             <a class="panel-nav-item" href="listado.php?tipo=tutores"><span>T</span>Tutores</a>
+            <a class="panel-nav-item" href="relaciones.php"><span>R</span>Relaciones familiares</a>
+            <a class="panel-nav-item" href="docente_grupos.php"><span>AG</span>Maestros y grupos</a>
+            <a class="panel-nav-item" href="videos.php"><span>V</span>Videos de YouTube</a>
         </nav>
         <a class="panel-nav-item panel-nav-salida" href="logout.php"><span>↪</span>Cerrar sesión</a>
     </aside>
@@ -54,6 +57,7 @@ $errorResumen = $errorResumen ?? null;
                 <a class="panel-tarjeta" href="registro_alumno.php"><span class="panel-icono">E+</span><strong>Registrar alumno</strong><span>Inscribir nuevos alumnos en el sistema.</span><b>→</b></a>
                 <a class="panel-tarjeta" href="registro_tutor.php"><span class="panel-icono">T+</span><strong>Registrar tutor</strong><span>Crear una cuenta para un padre o tutor.</span><b>→</b></a>
                 <a class="panel-tarjeta" href="registro_grupo.php"><span class="panel-icono">G+</span><strong>Registrar grupo</strong><span>Crear un grupo y asignar su ciclo escolar.</span><b>→</b></a>
+                <a class="panel-tarjeta" href="videos.php"><span class="panel-icono">V</span><strong>Administrar videos</strong><span>Gestionar enlaces de YouTube para pausas activas.</span><b>→</b></a>
             </div>
         </section>
 
