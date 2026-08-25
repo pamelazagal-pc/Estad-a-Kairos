@@ -19,7 +19,8 @@ class MaestroDashboard
             'maestro' => $this->obtenerMaestro($idDocente),
             'grupos' => $grupos,
             'grupo_seleccionado' => $idGrupo,
-            'alumnos' => $sinSeleccion ? [] : $this->obtenerAlumnos($idDocente, $idGrupo),
+'alumnos' => $sinSeleccion ? [] : $this->obtenerAlumnos($idDocente, $idGrupo),
+            'incidencias' => $sinSeleccion ? [] : $this->obtenerIncidencias($idDocente, $idGrupo),
             'kpis' => $sinSeleccion ? ['alumnos' => 0, 'atencion' => 0, 'crisis' => 0, 'contenciones' => 0] : $this->obtenerKpis($idDocente, $idGrupo),
         ];
     }
@@ -71,6 +72,24 @@ class MaestroDashboard
                 ORDER BY g.grado, g.grupo, a.apellido_paterno, a.apellido_materno, a.nombre";
         $stmt = $this->connection->prepare($sql);
         if ($idGrupo !== null) $stmt->bind_param('ii', $idDocente, $idGrupo); else $stmt->bind_param('i', $idDocente);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function obtenerIncidencias(int $idDocente, ?int $idGrupo = null): array
+    {
+        $sql = "SELECT b.id_nota, b.fecha_hora, b.emocion, b.accion_contencion, b.nota_descripcion,
+                       CONCAT_WS(' ', a.nombre, a.apellido_paterno, a.apellido_materno) AS alumno,
+                       CONCAT(g.grado, '° ', g.grupo) AS grupo
+                FROM bitacora_notas b
+                INNER JOIN alumnos a ON a.id_alumno = b.id_alumno
+                INNER JOIN grupos g ON g.id_grupo = a.id_grupo
+                INNER JOIN docente_grupos dg ON dg.id_grupo = a.id_grupo
+                WHERE b.id_docente = ? AND dg.id_docente = ? AND dg.estado = 'Activo'
+                  AND b.tipo_nota = 'Incidencia' AND a.estado = 'Activo' AND g.estado = 'Activo'" . ($idGrupo !== null ? " AND a.id_grupo = ?" : '') . "
+                ORDER BY b.fecha_hora DESC LIMIT 30";
+        $stmt = $this->connection->prepare($sql);
+        if ($idGrupo !== null) $stmt->bind_param('iii', $idDocente, $idDocente, $idGrupo); else $stmt->bind_param('ii', $idDocente, $idDocente);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }

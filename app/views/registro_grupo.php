@@ -11,7 +11,11 @@ $mensaje = $resultado['mensaje'] ?? null;
     <title>Registrar grupo | Kairos</title>
     <link rel="stylesheet" href="../../public/CSS/main.css">
 </head>
-<body>
+<body class="panel-body">
+<?php require_once __DIR__ . '/sidebar_administrador.php'; ?>
+<div class="panel-contenedor vista-interna sidebar-maestro-inyectada">
+<?php require_once __DIR__ . '/topbar_administrador.php'; ?>
+
 <main class="card">
     <h1>Registrar grupo</h1>
     <p>Crea un grupo escolar para organizar a los alumnos.</p>
@@ -32,7 +36,7 @@ $mensaje = $resultado['mensaje'] ?? null;
         <input id="ciclo_escolar" name="ciclo_escolar" maxlength="20" placeholder="2026-2027" value="<?= htmlspecialchars($datos['ciclo_escolar'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
         <button type="submit">Registrar grupo</button>
     </form>
-    <a class="boton boton-secundario" href="panel_administrador.php">Regresar al panel</a>
 </main>
+</div>
 </body>
 </html>

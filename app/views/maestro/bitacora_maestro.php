@@ -17,17 +17,17 @@ $esc = static function ($valor): string {
     <title>Bitácora emocional | Kairos</title>
     <link rel="stylesheet" href="../../CSS/main.css">
 </head>
-<body>
+<body class="panel-body">
+<?php require_once __DIR__ . '/../sidebar_maestro.php'; ?>
+<div class="panel-contenedor vista-interna sidebar-maestro-inyectada">
+<?php require_once __DIR__ . '/../topbar_maestro.php'; ?>
+
 <main class="dashboard bitacora-dashboard">
     <header class="encabezado">
         <div>
             <h1>Bitácora emocional</h1>
             <p>Seguimiento de alumnos asignados a <?= $esc($_SESSION['maestro_nombre'] ?? 'este maestro') ?></p>
         </div>
-        <nav class="acciones">
-            <a class="boton" href="dashboard_maestro.php">Volver al dashboard</a>
-            <a class="boton btn-peligro" href="logout_maestro.php">Cerrar sesión</a>
-        </nav>
     </header>
 
     <?php if ($mensaje): ?><div class="mensaje"><?= $esc($mensaje) ?></div><?php endif; ?>
@@ -145,5 +145,6 @@ function actualizarContencion() {
 tipo.addEventListener('change', actualizarContencion);
 actualizarContencion();
 </script>
+</div>
 </body>
 </html>

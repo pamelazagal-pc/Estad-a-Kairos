@@ -15,27 +15,16 @@ $nombreAdministrador = $_SESSION['administrador_nombre'] ?? 'Administrador';
     <link rel="stylesheet" href="../../public/CSS/main.css?v=listados-1">
 </head>
 <body class="panel-body">
-    <aside class="panel-sidebar">
-        <div class="panel-marca"><span class="panel-logo">K</span><strong>Kairos</strong></div>
-        <nav class="panel-nav" aria-label="Navegación principal">
-            <a class="panel-nav-item" href="panel_administrador.php"><span>⌂</span>Panel</a>
-            <a class="panel-nav-item <?= $tipo === 'administradores' ? 'panel-nav-activo' : '' ?>" href="listado.php?tipo=administradores"><span>A</span>Administradores</a>
-            <a class="panel-nav-item <?= $tipo === 'maestros' ? 'panel-nav-activo' : '' ?>" href="listado.php?tipo=maestros"><span>M</span>Maestros</a>
-            <a class="panel-nav-item <?= $tipo === 'alumnos' ? 'panel-nav-activo' : '' ?>" href="listado.php?tipo=alumnos"><span>E</span>Alumnos</a>
-            <a class="panel-nav-item <?= $tipo === 'grupos' ? 'panel-nav-activo' : '' ?>" href="listado.php?tipo=grupos"><span>G</span>Grupos</a>
-            <a class="panel-nav-item <?= $tipo === 'tutores' ? 'panel-nav-activo' : '' ?>" href="listado.php?tipo=tutores"><span>T</span>Tutores</a>
-        </nav>
-        <a class="panel-nav-item panel-nav-salida" href="logout.php"><span>↪</span>Cerrar sesión</a>
-    </aside>
+    <?php require_once __DIR__ . '/sidebar_administrador.php'; ?>
 
     <main class="panel-contenedor listado-contenedor">
+        <?php require_once __DIR__ . '/topbar_administrador.php'; ?>
         <header class="panel-encabezado">
             <div>
                 <p class="panel-etiqueta">PLATAFORMA KAIROS</p>
                 <h1><?= htmlspecialchars($listado['titulo'], ENT_QUOTES, 'UTF-8') ?></h1>
                 <p class="panel-bienvenida">Registros disponibles para <?= htmlspecialchars($nombreAdministrador, ENT_QUOTES, 'UTF-8') ?>.</p>
             </div>
-            <a class="boton boton-secundario" href="panel_administrador.php">Regresar al panel</a>
         </header>
 
         <section class="panel-seccion listado-seccion">

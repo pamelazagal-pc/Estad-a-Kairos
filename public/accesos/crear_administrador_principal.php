@@ -11,4 +11,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'crear
     $resultado = $controller->crearPrincipal();
 }
 
-require_once __DIR__ . '/../../app/views/crear_administrador_principal.php';
+require_once __DIR__ . '/../../app/views/administrador/crear_administrador_principal.php';

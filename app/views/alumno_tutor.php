@@ -15,7 +15,11 @@ function e($valor): string { return htmlspecialchars((string) $valor, ENT_QUOTES
     <title>Relaciones familiares | Kairos</title>
     <link rel="stylesheet" href="../../public/CSS/main.css?v=relaciones-1">
 </head>
-<body>
+<body class="panel-body">
+<?php require_once __DIR__ . '/sidebar_administrador.php'; ?>
+<div class="panel-contenedor vista-interna sidebar-maestro-inyectada">
+<?php require_once __DIR__ . '/topbar_administrador.php'; ?>
+
 <main class="panel-contenedor relaciones-contenedor">
     <header class="panel-encabezado">
         <div>
@@ -23,7 +27,6 @@ function e($valor): string { return htmlspecialchars((string) $valor, ENT_QUOTES
             <h1>Relaciones familiares</h1>
             <p class="panel-bienvenida">Asigna uno o varios tutores a cada alumno.</p>
         </div>
-        <a class="boton-secundario" href="panel_administrador.php">Regresar al panel</a>
     </header>
 
     <?php if ($errores !== []): ?><div class="alerta alerta-error"><ul><?php foreach ($errores as $error): ?><li><?= e($error) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
@@ -54,5 +57,6 @@ function e($valor): string { return htmlspecialchars((string) $valor, ENT_QUOTES
         <?php if ($relaciones === []): ?><tr><td colspan="6" class="tabla-vacia">No hay relaciones para el filtro seleccionado.</td></tr><?php else: foreach ($relaciones as $relacion): ?><tr><td><?= e($relacion['alumno']) ?></td><td><?= e($relacion['tutor']) ?></td><td><?= e($relacion['parentesco'] ?: '—') ?></td><td><?= (int)$relacion['es_principal'] === 1 ? 'Sí' : 'No' ?></td><td><span class="estado estado-<?= e($relacion['estado']) ?>"><?= e($relacion['estado']) ?></span></td><td><form class="form-accion" method="post" action="relaciones.php" onsubmit="return confirm('¿Deseas cambiar el estado de esta relación?');"><input type="hidden" name="accion" value="estado"><input type="hidden" name="id_alumno_tutor" value="<?= (int)$relacion['id_alumno_tutor'] ?>"><input type="hidden" name="accion_estado" value="<?= $relacion['estado'] === 'Activo' ? 'desactivar' : 'reactivar' ?>"><button type="submit" class="boton-tabla <?= $relacion['estado'] === 'Activo' ? 'boton-peligro' : 'boton-exito' ?>"><?= $relacion['estado'] === 'Activo' ? 'Desactivar' : 'Reactivar' ?></button></form></td></tr><?php endforeach; endif; ?></tbody></table></div>
     </section>
 </main>
+</div>
 </body>
 </html>

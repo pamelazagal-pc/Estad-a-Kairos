@@ -15,4 +15,4 @@ $datosAdministrador = $panelController->datosAdministrador();
 $resultadoResumen = $panelController->resumen();
 $resumen = $resultadoResumen['datos'];
 $errorResumen = $resultadoResumen['error'];
-require_once __DIR__ . '/../../app/views/panel_administrador.php';
+require_once __DIR__ . '/../../app/views/administrador/panel_administrador.php';
