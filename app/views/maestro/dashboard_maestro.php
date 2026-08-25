@@ -6,6 +6,7 @@
     $grupos = $datos['grupos'] ?? [];
     $alumnosDashboard = $datos['alumnos'] ?? [];
     $incidenciasDashboard = $datos['incidencias'] ?? [];
+    $recompensas = $datos['recompensas'] ?? [];
     $kpis = $datos['kpis'] ?? ['alumnos' => 0, 'atencion' => 0, 'crisis' => 0, 'contenciones' => 0];
     $grupoSeleccionado = (int)($datos['grupo_seleccionado'] ?? 0);
     $grupoActual = $grupoSeleccionado > 0 ? $grupoSeleccionado : (count($grupos) === 1 ? (int)$grupos[0]['id_grupo'] : 0);
@@ -22,7 +23,9 @@
             'grupo' => $alumno['grupo'],
             'reg' => $alumno['ultima_emocion'] ?: 'Sin registro',
             'accion' => $alumno['ultima_accion'] ?: '',
-            'hora' => $alumno['ultima_actualizacion'] ?: 'Sin registro'
+                        'hora' => $alumno['ultima_actualizacion'] ?: 'Sin registro',
+            'puntos' => (int)($alumno['puntos_acumulados'] ?? 0)
+
         ];
     }, $alumnosDashboard), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 ?>
@@ -135,6 +138,15 @@
         <div id="break-alert" class="break-alert">
           🐾 ¡Momento de pausa activa!<br/>La mascota está lista.
         </div>
+        <div id="regulation-overlay" class="regulation-overlay" hidden>
+          <div class="regulation-card" role="dialog" aria-modal="true" aria-labelledby="regulation-title">
+            <div class="mascot-animation" aria-hidden="true">🐾</div>
+            <p class="regulation-kicker">PAUSA ACTIVA KAIROS</p>
+            <h2 id="regulation-title">Es momento de regularnos</h2>
+            <p>Respira con calma, sigue la guía de la mascota y vuelve al aula cuando te sientas preparado.</p>
+            <button class="btn-save regulation-close" type="button" onclick="cerrarPausaActiva()">Continuar con la clase</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -143,7 +155,7 @@
       <table class="semaforo-table">
         <thead>
           <tr>
-            <th>Nombre Alumno</th>
+            <th>Alumno</th>
             <th>Estado Actual</th>
             <th>Última Actualización</th>
             <th>Último Registro Emocional</th>
@@ -181,7 +193,8 @@
         <svg class="icon-lg" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
         <span>Registrar incidencia rápida</span>
       </button>
-      <div class="card incident-modal" id="incident-modal" hidden>
+            <div class="card incident-modal" id="incident-modal" hidden>
+
         <div class="card-header">
           <span class="section-heading">Registro de Incidencia Rápido</span>
           <button class="modal-close" type="button" onclick="closeIncidentModal()" aria-label="Cerrar ventana">×</button>
@@ -235,7 +248,35 @@
         </form>
       </div>
 
-
+      <div class="card recognition-card">
+        <div class="card-header"><span class="section-heading">Reconocer conducta positiva</span></div>
+        <form method="post" class="incident-form" id="medal-form">
+          <input type="hidden" name="accion" value="asignar_medalla">
+          <?php if ($grupoSeleccionado > 0): ?><input type="hidden" name="id_grupo" value="<?= $grupoSeleccionado ?>"><?php endif; ?>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="medal-alumno">Alumno</label>
+              <select class="form-select" id="medal-alumno" name="id_alumno" required>
+                <option value="">— Seleccionar alumno —</option>
+                <?php foreach ($alumnosDashboard as $alumno): ?><option value="<?= (int)$alumno['id_alumno'] ?>"><?= htmlspecialchars($alumno['nombre_completo'], ENT_QUOTES, 'UTF-8') ?> — <?= (int)($alumno['puntos_acumulados'] ?? 0) ?> puntos</option><?php endforeach; ?>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="medal-recompensa">Medalla</label>
+              <select class="form-select" id="medal-recompensa" name="id_recompensa" required>
+                <option value="">— Seleccionar medalla —</option>
+                <?php foreach ($recompensas as $recompensa): ?><option value="<?= (int)$recompensa['id_recompensa'] ?>"><?= htmlspecialchars(($recompensa['icono_url'] ?: '★') . ' ' . $recompensa['nombre_insignia'], ENT_QUOTES, 'UTF-8') ?> · <?= (int)$recompensa['puntos_otorgados'] ?> puntos</option><?php endforeach; ?>
+              </select>
+              <?php if ($recompensas === []): ?><small class="form-help">El administrador aún no ha publicado medallas activas.</small><?php endif; ?>
+            </div>
+            <textarea class="form-textarea form-select" id="medal-descripcion" name="descripcion_medalla" maxlength="1000" required placeholder="Describe la conducta positiva reconocida."></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn-save" type="submit" <?= $recompensas === [] ? 'disabled' : '' ?>>Asignar medalla</button>
+            <span id="medal-message" class="message-success" role="status"></span>
+          </div>
+        </form>
+      </div>
 
     </div>
     <?php else: ?>
@@ -282,8 +323,7 @@ function renderAlumnos() {
     const inicial = a.nombre.split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase();
     tbody.innerHTML += `
       <tr class="${rowClass}">
-        <td><div class="avatar">${inicial}</div></td>
-        <td><div class="student-name">${a.nombre}</div><small class="student-group">${a.grupo}</small></td>
+        <td><div class="student-cell"><div class="avatar">${inicial}</div><div><div class="student-name">${a.nombre}</div><small class="student-group">${a.grupo} · ${a.puntos || 0} puntos</small></div></div></td>
         <td><span class="dot ${a.estado}" title="${blabel}"></span><small class="status-label">${blabel}</small></td>
         <td class="last-update">${a.hora}</td>
         <td><span class="badge ${bc}">${a.reg}</span></td>
@@ -330,8 +370,10 @@ async function guardarNota(event) {
     grupo: a.grupo,
     reg: a.ultima_emocion || "Sin registro",
     accion: a.ultima_accion || "",
-    hora: a.ultima_actualizacion || "Sin registro"
+        hora: a.ultima_actualizacion || "Sin registro",
+    puntos: Number(a.puntos_acumulados || 0)
   })));
+
   renderAlumnos();
   const incidencias = (json.datos && json.datos.incidencias) || [];
   const incidenciasBody = document.getElementById("incidencias-tbody");
@@ -346,6 +388,49 @@ async function guardarNota(event) {
 }
 
 document.getElementById("incident-form").addEventListener("submit", guardarNota);
+
+async function guardarMedalla(event) {
+  event.preventDefault();
+  const form = document.getElementById("medal-form");
+  const alumno = document.getElementById("medal-alumno").value;
+  const recompensa = document.getElementById("medal-recompensa").value;
+  const descripcion = document.getElementById("medal-descripcion").value.trim();
+  if (!alumno || !recompensa || !descripcion) {
+    alert("Completa alumno, medalla y descripción del logro.");
+    return;
+  }
+  const respuesta = await fetch(window.location.href, {
+    method: "POST",
+    body: new FormData(form),
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  });
+  const json = await respuesta.json();
+  const mensaje = document.getElementById("medal-message");
+  if (!json.ok) {
+    mensaje.textContent = (json.errores || ["No fue posible asignar la medalla."]).join(" ");
+    mensaje.classList.add("message-error", "is-visible");
+    return;
+  }
+  const nuevosAlumnos = (json.datos && json.datos.alumnos) || [];
+  alumnos.splice(0, alumnos.length, ...nuevosAlumnos.map(a => ({
+    id: Number(a.id_alumno),
+    nombre: a.nombre_completo,
+    estado: String(a.estado_semaforo || "Verde").toLowerCase() === "amarillo" ? "yellow" : (String(a.estado_semaforo || "Verde").toLowerCase() === "rojo" ? "red" : "green"),
+    grupo: a.grupo,
+    reg: a.ultima_emocion || "Sin registro",
+    accion: a.ultima_accion || "",
+    hora: a.ultima_actualizacion || "Sin registro",
+    puntos: Number(a.puntos_acumulados || 0)
+  })));
+  renderAlumnos();
+  form.reset();
+  mensaje.textContent = "✓ Medalla asignada correctamente.";
+  mensaje.classList.remove("message-error");
+  mensaje.classList.add("is-visible");
+  setTimeout(() => mensaje.classList.remove("is-visible"), 4500);
+}
+
+document.getElementById("medal-form").addEventListener("submit", guardarMedalla);
 
 function descartar() {
   document.getElementById("sel-alumno").value = "";
@@ -387,6 +472,7 @@ function saveTimerState() {
     totalSeconds,
     elapsed,
     breakInterval,
+    nivel: Number(document.getElementById("timer-nivel").value) || 2,
     activeSessionId,
     running,
     savedAt: Date.now(),
@@ -403,6 +489,7 @@ function restoreTimerState() {
     const state = JSON.parse(raw);
     totalSeconds = Number(state.totalSeconds) || 0;
     breakInterval = Number(state.breakInterval) || 0;
+    if (state.nivel) document.getElementById("timer-nivel").value = String(state.nivel);
     activeSessionId = state.activeSessionId || null;
     elapsed = state.running && state.endAt ? Math.max(0, Math.ceil((state.endAt - Date.now()) / 1000)) : Number(state.elapsed) || 0;
     if (elapsed <= 0) { clearTimerState(); return; }
@@ -430,7 +517,18 @@ function prepararAudioFin() {
   }
 }
 
+function mostrarPausaActiva() {
+  const overlay = document.getElementById("regulation-overlay");
+  if (overlay) overlay.hidden = false;
+}
+
+function cerrarPausaActiva() {
+  const overlay = document.getElementById("regulation-overlay");
+  if (overlay) overlay.hidden = true;
+}
+
 function reproducirAudioFin() {
+
   const audio = document.getElementById("break-finished-audio");
   if (!audio) return;
   audio.muted = false;
@@ -472,7 +570,7 @@ async function startTimer() {
     return;
   }
   totalSeconds = mins * 60;
-  breakInterval = nivel === 1 ? 20 * 60 : nivel === 2 ? 15 * 60 : 10 * 60;
+  breakInterval = Math.max(5 * 60, Math.round(totalSeconds / (nivel + 1)));
 
   if (elapsed === 0) elapsed = totalSeconds;
   running = true;
@@ -499,13 +597,14 @@ async function startTimer() {
       document.getElementById("timer-display").className = "timer-display warning";
       document.getElementById("timer-status").textContent = "⚠ Quedan 2 minutos";
     }
-    if (elapsed <= 0) {
+  if (elapsed <= 0) {
       clearInterval(timerInterval);
       running = false;
       document.getElementById("timer-display").textContent = "00:00";
       document.getElementById("timer-status").textContent = "✓ Sesión finalizada";
       document.getElementById("timer-display").className = "timer-display";
       reproducirAudioFin();
+      mostrarPausaActiva();
       actualizarSesion("finalizar_sesion").catch(error => {
         document.getElementById("timer-status").textContent = "Sesión finalizada localmente: " + error.message;
       });

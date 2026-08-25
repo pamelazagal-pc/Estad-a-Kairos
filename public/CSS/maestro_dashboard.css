@@ -637,3 +637,24 @@ body { font-size: 13px; }
     .kpi-row { grid-template-columns: 1fr 1fr; }
     .timer-config-duration, .timer-config-level { width: 100%; }
 }
+
+
+/* Pantalla de pausa activa */
+.regulation-overlay[hidden] { display: none; }
+.regulation-overlay { position: fixed; z-index: 60; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(20, 43, 55, .72); backdrop-filter: blur(4px); }
+.regulation-card { width: min(100%, 430px); padding: 34px 30px 30px; border: 2px solid rgba(0, 155, 130, .32); border-radius: 20px; background: #ffffff; box-shadow: 0 24px 70px rgba(0,0,0,.25); text-align: center; animation: regulation-in .35s ease-out; }
+.mascot-animation { display: grid; width: 92px; height: 92px; margin: 0 auto 18px; place-items: center; border-radius: 50%; background: var(--upemor-green-l); font-size: 49px; animation: mascot-breathe 2.4s ease-in-out infinite; }
+.regulation-kicker { margin: 0 0 8px; color: var(--upemor-green-d); font-size: 10px; font-weight: 800; letter-spacing: 1.3px; }
+.regulation-card h2 { margin: 0 0 10px; color: var(--text-main); font-family: Nunito, sans-serif; font-size: 25px; }
+.regulation-card p:not(.regulation-kicker) { margin: 0 auto 22px; color: var(--text-muted); font-size: 13px; line-height: 1.6; }
+.regulation-close { width: auto; margin: 0; }
+@keyframes regulation-in { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes mascot-breathe { 0%, 100% { transform: scale(.96); box-shadow: 0 0 0 0 rgba(0,155,130,.10); } 50% { transform: scale(1.06); box-shadow: 0 0 0 14px rgba(0,155,130,.06); } }
+@media (max-width: 480px) { .regulation-card { padding: 28px 20px 22px; } .regulation-card h2 { font-size: 22px; } }
+
+
+/* Reconocimiento positivo */
+.recognition-card { margin-top: 14px; border: 1px solid var(--border); border-top: 3px solid var(--upemor-purple); }
+.recognition-card .form-help { display: block; margin-top: 6px; color: var(--text-muted); font-size: 11px; }
+.recognition-card .btn-save:disabled { cursor: not-allowed; opacity: .55; }
+.recognition-card .message-error { color: var(--red-500); }

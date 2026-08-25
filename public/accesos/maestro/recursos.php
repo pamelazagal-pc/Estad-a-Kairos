@@ -10,7 +10,9 @@ require_once __DIR__ . '/../../../app/models/Lectura.php';
 $videoModel = new Video($connection);
 $lecturaModel = new Lectura($connection);
 $videos = $videoModel->listar('Activo')['filas'] ?? [];
-$lecturas = $lecturaModel->listarActivas();
+$categoriaLectura = trim((string)($_GET['categoria'] ?? ''));
+$categoriasLectura = $lecturaModel->listarCategoriasActivas();
+$lecturas = $lecturaModel->listarActivas($categoriaLectura);
 $actividades = array_values(array_filter($videos, static function (array $video): bool {
     return stripos((string)($video['categoria'] ?? ''), 'actividad') !== false;
 }));

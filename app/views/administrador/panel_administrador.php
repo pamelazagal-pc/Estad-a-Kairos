@@ -42,6 +42,8 @@ $errorResumen = $errorResumen ?? null;
                 <a class="panel-tarjeta" href="registro_tutor.php"><span class="panel-icono" aria-hidden="true">♧+</span><strong>Registrar tutor</strong><span>Crear una cuenta para un padre o tutor.</span><b>→</b></a>
                 <a class="panel-tarjeta" href="registro_grupo.php"><span class="panel-icono" aria-hidden="true">▦+</span><strong>Registrar grupo</strong><span>Crear un grupo y asignar su ciclo escolar.</span><b>→</b></a>
                 <a class="panel-tarjeta" href="videos.php"><span class="panel-icono" aria-hidden="true">▶</span><strong>Administrar videos</strong><span>Gestionar enlaces de YouTube para pausas activas.</span><b>→</b></a>
+                <a class="panel-tarjeta" href="lecturas.php"><span class="panel-icono" aria-hidden="true">▤</span><strong>Lecturas y cuentos</strong><span>Crear y publicar lecturas cortas por categoría temática.</span><b>→</b></a>
+                <a class="panel-tarjeta" href="recompensas.php"><span class="panel-icono" aria-hidden="true">★</span><strong>Medallas y puntos</strong><span>Administrar reconocimientos para la conducta positiva.</span><b>→</b></a>
             </div>
         </section>
 
