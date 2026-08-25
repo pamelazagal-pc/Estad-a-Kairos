@@ -22,4 +22,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'regis
     }
 }
 
-require_once __DIR__ . '/../../app/views/registro_tutor.php';
+require_once __DIR__ . '/../../app/views/tutor/registro_tutor.php';

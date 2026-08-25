@@ -21,4 +21,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'regis
     }
 }
 
-require_once __DIR__ . '/../../app/views/registro_administrador.php';
+require_once __DIR__ . '/../../app/views/administrador/registro_administrador.php';

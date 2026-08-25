@@ -15,11 +15,14 @@ function esc($valor): string { return htmlspecialchars((string)$valor, ENT_QUOTE
     <title>Asignar maestros | Kairos</title>
     <link rel="stylesheet" href="../../public/CSS/main.css?v=asignaciones-1">
 </head>
-<body>
+<body class="panel-body">
+<?php require_once __DIR__ . '/sidebar_administrador.php'; ?>
+<div class="panel-contenedor vista-interna sidebar-maestro-inyectada">
+<?php require_once __DIR__ . '/topbar_administrador.php'; ?>
+
 <main class="panel-contenedor relaciones-contenedor">
     <header class="panel-encabezado">
         <div><p class="panel-etiqueta">PLATAFORMA KAIROS</p><h1>Asignar maestros a grupos</h1><p class="panel-bienvenida">Define qué grupos puede atender cada maestro.</p></div>
-        <a class="boton-secundario" href="panel_administrador.php">Regresar al panel</a>
     </header>
     <?php if ($errores !== []): ?><div class="alerta alerta-error"><ul><?php foreach ($errores as $error): ?><li><?= esc($error) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
     <?php if ($mensaje): ?><div class="alerta alerta-exito"><?= esc($mensaje) ?></div><?php endif; ?>
@@ -40,5 +43,6 @@ function esc($valor): string { return htmlspecialchars((string)$valor, ENT_QUOTE
         <?php if ($asignaciones === []): ?><tr><td colspan="6" class="tabla-vacia">No hay asignaciones para el filtro seleccionado.</td></tr><?php else: foreach ($asignaciones as $asignacion): ?><tr><td><?= esc($asignacion['docente']) ?></td><td><?= esc($asignacion['grupo']) ?></td><td><?= esc($asignacion['ciclo_escolar']) ?></td><td><?= (int)$asignacion['es_titular'] === 1 ? 'Sí' : 'No' ?></td><td><?= esc($asignacion['estado']) ?></td><td><form class="form-accion" method="post" action="docente_grupos.php" onsubmit="return confirm('¿Deseas cambiar el estado de esta asignación?');"><input type="hidden" name="accion" value="estado"><input type="hidden" name="id_docente_grupo" value="<?= (int)$asignacion['id_docente_grupo'] ?>"><input type="hidden" name="accion_estado" value="<?= $asignacion['estado'] === 'Activo' ? 'desactivar' : 'reactivar' ?>"><button type="submit" class="boton-tabla <?= $asignacion['estado'] === 'Activo' ? 'boton-peligro' : 'boton-exito' ?>"><?= $asignacion['estado'] === 'Activo' ? 'Desactivar' : 'Reactivar' ?></button></form></td></tr><?php endforeach; endif; ?></tbody></table></div>
     </section>
 </main>
+</div>
 </body>
 </html>

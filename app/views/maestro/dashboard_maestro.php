@@ -5,8 +5,11 @@
     $maestro = $datos['maestro'] ?? [];
     $grupos = $datos['grupos'] ?? [];
     $alumnosDashboard = $datos['alumnos'] ?? [];
+    $incidenciasDashboard = $datos['incidencias'] ?? [];
     $kpis = $datos['kpis'] ?? ['alumnos' => 0, 'atencion' => 0, 'crisis' => 0, 'contenciones' => 0];
     $grupoSeleccionado = (int)($datos['grupo_seleccionado'] ?? 0);
+    $grupoActual = $grupoSeleccionado > 0 ? $grupoSeleccionado : (count($grupos) === 1 ? (int)$grupos[0]['id_grupo'] : 0);
+    $mostrarPanel = $grupoActual > 0;
     $grupoActivo = null;
     foreach ($grupos as $grupo) { if ((int)$grupo['id_grupo'] === $grupoSeleccionado) { $grupoActivo = $grupo; break; } }
     $nombreGrupo = $grupoActivo ? ($grupoActivo['nombre_grupo'] . ' — ' . $grupoActivo['ciclo_escolar']) : (count($grupos) === 1 ? ($grupos[0]['nombre_grupo'] . ' — ' . $grupos[0]['ciclo_escolar']) : (count($grupos) > 1 ? count($grupos) . ' grupos asignados' : 'Sin grupos asignados'));
@@ -31,71 +34,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Emotion Monitor – maestro | UPEMOR</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../CSS/dashboard_maestro.css" />
+  <link rel="stylesheet" href="../../CSS/maestro_dashboard.css" />
 </head>
-<body>
+<body data-grupo="<?= $grupoActual ?>">
 
-<!-- ══════════════ SIDEBAR ══════════════ -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-mark">U</div>
-    <div class="logo-name">UPEMOR <span class="logo-sub"><br/>Universidad Politécnica</span></div>
-  </div>
-
-  <nav class="sidebar-nav">
-    <div class="nav-label">Principal</div>
-
-    <div class="nav-item active">
-      <svg class="nav-icon icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      Tablero
-      <span class="nav-sub">(Dashboard)</span>
-    </div>
-
-    <div class="nav-item" onclick="this.classList.toggle('active')">
-      <svg class="nav-icon icon" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.85"/></svg>
-      Mi Grupo
-      <span class="nav-sub">(Lista c/Semáforos)</span>
-    </div>
-
-    <div class="nav-label">Registros</div>
-
-    <div class="nav-item has-notification" onclick="this.classList.toggle('active')">
-      <svg class="nav-icon icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Bitácora emocional
-    </a>
-
-    <div class="nav-label">Catálogos</div>
-
-    <div class="nav-item" onclick="this.classList.toggle('active')">
-      <svg class="nav-icon icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-      Catálogo Emocional
-    </div>
-
-    <div class="nav-item" onclick="this.classList.toggle('active')">
-      <svg class="nav-icon icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-      Reportes
-    </div>
-
-    <div class="nav-label">Sistema</div>
-
-    <div class="nav-item" onclick="this.classList.toggle('active')">
-      <svg class="nav-icon icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M5.34 5.34l1.41 1.41"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M18.66 18.66l-1.41-1.41"/></svg>
-      Configuración
-    </div>
-  </nav>
-</aside>
+<?php require_once __DIR__ . '/../sidebar_maestro.php'; ?>
 
 <!-- ══════════════ MAIN ══════════════ -->
-<div class="main">
+<div class="main" id="alumnos">
 
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar-title">HOLA – MAESTRO</div>
-    <div class="topbar-right">
-<span class="topbar-user">Bienvenido/a, <?= htmlspecialchars($maestro['nombre'] ?? $_SESSION['maestro_nombre'] ?? 'Maestro', ENT_QUOTES, 'UTF-8') ?></span>
-      <a class="btn-logout" href="logout_maestro.php">Cerrar Sesión</a>
-    </div>
-  </header>
+  <?php require_once __DIR__ . '/../topbar_maestro.php'; ?>
 
   <!-- CONTENT -->
   <div class="content">
@@ -119,6 +67,7 @@
       </div>
     </div>
 
+    <?php if ($mostrarPanel): ?>
     <!-- ── KPIs ── -->
     <div class="kpi-row">
       <div class="kpi-card blue">
@@ -139,6 +88,56 @@
       </div>
     </div>
 
+    <div class="timer-row">
+      <!-- TEMPORIZADOR -->
+      <div class="timer-card" id="configuracion">
+        <div class="timer-label">Control de Tiempo</div>
+        <div class="timer-display" id="timer-display">00:00</div>
+        <div class="timer-status" id="timer-status">Listo para iniciar</div>
+
+        <div class="timer-config">
+          <div class="form-group timer-config-duration">
+            <label class="form-label timer-config-label">Duración (min)</label>
+            <input id="timer-input" type="number" min="1" max="120" value="40" class="form-select timer-config-control" />
+          </div>
+          <div class="form-group timer-config-level">
+            <label class="form-label timer-config-label">Nivel Irritabilidad</label>
+            <select id="timer-nivel" class="form-select timer-config-control">
+              <option value="1">Bajo</option>
+              <option value="2" selected>Medio</option>
+              <option value="3">Alto</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="timer-controls">
+          <button class="timer-btn" id="btn-start" onclick="startTimer()">
+            <div class="timer-btn-icon">
+              <svg class="icon-lg" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></svg>
+            </div>
+            <span class="timer-btn-label">Iniciar</span>
+          </button>
+          <button class="timer-btn disabled" id="btn-pause" onclick="pauseTimer()">
+            <div class="timer-btn-icon">
+              <svg class="icon-lg" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" fill="currentColor" stroke="none"/><rect x="14" y="4" width="4" height="16" fill="currentColor" stroke="none"/></svg>
+            </div>
+            <span class="timer-btn-label">Pausar</span>
+          </button>
+          <button class="timer-btn" id="btn-reset" onclick="resetTimer()">
+            <div class="timer-btn-icon">
+              <svg class="icon-lg" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </div>
+            <span class="timer-btn-label">Reiniciar</span>
+          </button>
+        </div>
+
+        <!-- pausa activa alerta -->
+        <div id="break-alert" class="break-alert">
+          🐾 ¡Momento de pausa activa!<br/>La mascota está lista.
+        </div>
+      </div>
+    </div>
+
     <!-- ── SEMÁFORO TABLE ── -->
     <div class="card">
       <table class="semaforo-table">
@@ -153,19 +152,39 @@
         </thead>
 <tbody id="alumnos-tbody">
           <?php if ($alumnosDashboard === []): ?>
-            <tr><td colspan="6" class="empty-row">No hay alumnos activos en tus grupos asignados.</td></tr>
+            <tr><td colspan="5" class="empty-row">No hay alumnos activos en tus grupos asignados.</td></tr>
           <?php endif; ?>
         </tbody>
       </table>
+    </div>
+
+    <div class="card incidencias-recientes-card">
+      <div class="card-header"><span class="section-heading">Incidencias recientes</span></div>
+      <div class="tabla-scroll">
+        <table class="semaforo-table incidencias-table">
+          <thead><tr><th>Fecha y hora</th><th>Alumno</th><th>Emoción</th><th>Contención</th><th>Descripción</th></tr></thead>
+          <tbody id="incidencias-tbody">
+            <?php if ($incidenciasDashboard === []): ?><tr><td colspan="5" class="empty-row">No hay incidencias recientes en este grupo.</td></tr><?php endif; ?>
+            <?php foreach ($incidenciasDashboard as $incidencia): ?>
+              <tr><td><?= htmlspecialchars($incidencia['fecha_hora'], ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($incidencia['alumno'], ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($incidencia['emocion'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($incidencia['accion_contencion'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($incidencia['nota_descripcion'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td></tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ── BOTTOM ROW ── -->
     <div class="bottom-row">
 
       <!-- REGISTRO RÁPIDO -->
-      <div class="card">
+      <button class="incident-open" type="button" onclick="openIncidentModal()">
+        <svg class="icon-lg" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Registrar incidencia rápida</span>
+      </button>
+      <div class="card incident-modal" id="incident-modal" hidden>
         <div class="card-header">
           <span class="section-heading">Registro de Incidencia Rápido</span>
+          <button class="modal-close" type="button" onclick="closeIncidentModal()" aria-label="Cerrar ventana">×</button>
         </div>
         <form method="post" class="incident-form" id="incident-form">
           <input type="hidden" name="accion" value="registrar_incidencia">
@@ -209,62 +228,19 @@
           <button class="btn-save" type="submit">
             <span>Guardar Nota</span>
           </button>
-          <button class="btn-discard" onclick="descartar()">Descartar</button>
-          <span id="msg-ok" class="msg-ok">✓ Incidencia registrada</span>
+          <button class="btn-discard" type="button" onclick="descartar()">Descartar</button>
+          <?php if ($mensaje): ?><span id="msg-ok" class="message-success">✓ <?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
+          <?php if ($errores !== []): ?><span class="message-error"><?= htmlspecialchars(implode(' ', $errores), ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
         </div>
         </form>
       </div>
 
-      <!-- TEMPORIZADOR -->
-      <div class="timer-card">
-        <div class="timer-label">Control de Tiempo</div>
-        <div class="timer-display" id="timer-display">00:00</div>
-        <div class="timer-status" id="timer-status">Listo para iniciar</div>
 
-        <div class="timer-settings">
-          <div class="form-group timer-setting timer-setting-duration">
-            <label class="form-label">Duración (min)</label>
-            <input id="timer-input" type="number" min="1" max="120" value="40"
-              class="form-select timer-input-control" />
-          </div>
-          <div class="form-group timer-setting timer-setting-level">
-            <label class="form-label">Nivel Irritabilidad</label>
-            <select id="timer-nivel" class="form-select timer-select-control">
-              <option value="1">Bajo</option>
-              <option value="2" selected>Medio</option>
-              <option value="3">Alto</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="timer-controls">
-          <button class="timer-btn" id="btn-start" onclick="startTimer()">
-            <div class="timer-btn-icon">
-              <svg class="icon-lg" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></svg>
-            </div>
-            <span class="timer-btn-label">Iniciar</span>
-          </button>
-          <button class="timer-btn disabled" id="btn-pause" onclick="pauseTimer()">
-            <div class="timer-btn-icon">
-              <svg class="icon-lg" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" fill="currentColor" stroke="none"/><rect x="14" y="4" width="4" height="16" fill="currentColor" stroke="none"/></svg>
-            </div>
-            <span class="timer-btn-label">Pausar</span>
-          </button>
-          <button class="timer-btn" id="btn-reset" onclick="resetTimer()">
-            <div class="timer-btn-icon">
-              <svg class="icon-lg" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            </div>
-            <span class="timer-btn-label">Reiniciar</span>
-          </button>
-        </div>
-
-        <!-- pausa activa alerta -->
-        <div id="break-alert" class="break-alert">
-          🐾 ¡Momento de pausa activa!<br/>La mascota está lista.
-        </div>
-      </div>
 
     </div>
+    <?php else: ?>
+    <div class="group-selection-help">Selecciona uno de tus grupos para ver sus alumnos, indicadores y herramientas de seguimiento.</div>
+    <?php endif; ?>
   </div><!-- /content -->
 </div><!-- /main -->
 
@@ -273,6 +249,19 @@
 <script>
 /* ── DATOS DE ALUMNOS ── */
 const alumnos = <?= $alumnosJson ?: '[]' ?>;
+const grupoActual = <?= (int)$grupoActual ?>;
+
+function openIncidentModal() {
+  const modal = document.getElementById('incident-modal');
+  modal.hidden = false;
+  modal.classList.add('is-open');
+}
+function closeIncidentModal() {
+  const modal = document.getElementById('incident-modal');
+  modal.classList.remove('is-open');
+  modal.hidden = true;
+}
+
 
 const badgeMap = {
   green:  ["green",  "Verde – Estable"],
@@ -284,7 +273,7 @@ function renderAlumnos() {
   const tbody = document.getElementById("alumnos-tbody");
   tbody.innerHTML = "";
   if (alumnos.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-row">No hay alumnos activos en tus grupos asignados.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-row">No hay alumnos activos en tus grupos asignados.</td></tr>';
     return;
   }
   alumnos.forEach((a, i) => {
@@ -293,12 +282,10 @@ function renderAlumnos() {
     const inicial = a.nombre.split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase();
     tbody.innerHTML += `
       <tr class="${rowClass}">
-        <td>
-          <div class="avatar">${a.inicial}</div>
-        </td>
-        <td><div class="student-name">${a.nombre}</div></td>
-        <td><span class="dot ${a.estado}" title="${blabel}"></span></td>
-        <td class="hora-cell">${a.hora}</td>
+        <td><div class="avatar">${inicial}</div></td>
+        <td><div class="student-name">${a.nombre}</div><small class="student-group">${a.grupo}</small></td>
+        <td><span class="dot ${a.estado}" title="${blabel}"></span><small class="status-label">${blabel}</small></td>
+        <td class="last-update">${a.hora}</td>
         <td><span class="badge ${bc}">${a.reg}</span></td>
         <td><div class="action-btns"><button class="action-btn" title="Seleccionar alumno" onclick="editAlumno(${i})"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button></div></td>
       </tr>`;
@@ -314,30 +301,51 @@ function editAlumno(i) {
 renderAlumnos();
 
 /* ── FORMULARIO ── */
-function guardarNota() {
-  const alumno  = document.getElementById("sel-alumno").value;
-  const tipo    = document.getElementById("sel-tipo").value;
+async function guardarNota(event) {
+  event.preventDefault();
+  const form = document.getElementById("incident-form");
+  const alumno = document.getElementById("sel-alumno").value;
+  const tipo = document.getElementById("sel-tipo").value;
   const emocion = document.getElementById("sel-emocion").value;
-  const desc    = document.getElementById("txt-desc").value.trim();
-
-  if (!alumno || !tipo || !emocion) {
-    alert("Por favor selecciona alumno, tipo de contención y emoción detectada.");
+  const descripcion = document.getElementById("txt-desc").value.trim();
+  if (!alumno || !tipo || !emocion || !descripcion) {
+    alert("Completa alumno, tipo de contención, emoción y descripción.");
     return;
   }
-
-  // actualiza estado del alumno en la tabla
-  const idx = alumnos.findIndex(a => a.nombre === alumno);
-  if (idx !== -1) {
-    alumnos[idx].reg = tipo;
-    const now = new Date();
-    alumnos[idx].hora = now.toLocaleDateString('es-MX') + ", " + now.toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
-    renderAlumnos();
+  const respuesta = await fetch(window.location.href, {
+    method: "POST",
+    body: new FormData(form),
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  });
+  const json = await respuesta.json();
+  if (!json.ok) {
+    alert((json.errores || ["No fue posible guardar la incidencia."]).join(" "));
+    return;
   }
-
-  document.getElementById("msg-ok").style.display = "inline";
-  setTimeout(() => document.getElementById("msg-ok").style.display = "none", 2500);
+  const nuevosAlumnos = (json.datos && json.datos.alumnos) || [];
+  alumnos.splice(0, alumnos.length, ...nuevosAlumnos.map(a => ({
+    id: Number(a.id_alumno),
+    nombre: a.nombre_completo,
+    estado: String(a.estado_semaforo || "Verde").toLowerCase() === "amarillo" ? "yellow" : (String(a.estado_semaforo || "Verde").toLowerCase() === "rojo" ? "red" : "green"),
+    grupo: a.grupo,
+    reg: a.ultima_emocion || "Sin registro",
+    accion: a.ultima_accion || "",
+    hora: a.ultima_actualizacion || "Sin registro"
+  })));
+  renderAlumnos();
+  const incidencias = (json.datos && json.datos.incidencias) || [];
+  const incidenciasBody = document.getElementById("incidencias-tbody");
+  incidenciasBody.innerHTML = incidencias.length ? incidencias.map(i => `<tr><td>${i.fecha_hora}</td><td>${i.alumno}</td><td>${i.emocion || "—"}</td><td>${i.accion_contencion || "—"}</td><td>${i.nota_descripcion || "—"}</td></tr>`).join("") : '<tr><td colspan="5" class="empty-row">No hay incidencias recientes en este grupo.</td></tr>';
   descartar();
+  closeIncidentModal();
+  const mensaje = document.querySelector(".form-actions .message-success");
+  if (mensaje) {
+    mensaje.textContent = "✓ Incidencia guardada correctamente.";
+    mensaje.classList.add("is-visible");
+  }
 }
+
+document.getElementById("incident-form").addEventListener("submit", guardarNota);
 
 function descartar() {
   document.getElementById("sel-alumno").value = "";
@@ -372,7 +380,39 @@ function fmtTime(s) {
   const sec = (s % 60).toString().padStart(2, "0");
   return `${m}:${sec}`;
 }
-
+const timerStorageKey = `kairos_timer_${grupoActual || "sin-grupo"}`;
+function saveTimerState() {
+  if (!grupoActual || elapsed <= 0) return;
+  localStorage.setItem(timerStorageKey, JSON.stringify({
+    totalSeconds,
+    elapsed,
+    breakInterval,
+    activeSessionId,
+    running,
+    savedAt: Date.now(),
+    endAt: running ? Date.now() + elapsed * 1000 : null
+  }));
+}
+function clearTimerState() {
+  localStorage.removeItem(timerStorageKey);
+}
+function restoreTimerState() {
+  const raw = localStorage.getItem(timerStorageKey);
+  if (!raw) return;
+  try {
+    const state = JSON.parse(raw);
+    totalSeconds = Number(state.totalSeconds) || 0;
+    breakInterval = Number(state.breakInterval) || 0;
+    activeSessionId = state.activeSessionId || null;
+    elapsed = state.running && state.endAt ? Math.max(0, Math.ceil((state.endAt - Date.now()) / 1000)) : Number(state.elapsed) || 0;
+    if (elapsed <= 0) { clearTimerState(); return; }
+    document.getElementById("timer-display").textContent = fmtTime(elapsed);
+    document.getElementById("timer-input").value = Math.max(1, Math.round(totalSeconds / 60));
+    if (state.running) setTimeout(() => startTimer(), 0);
+  } catch (error) {
+    clearTimerState();
+  }
+}
 function prepararAudioFin() {
   const audio = document.getElementById("break-finished-audio");
   if (!audio) return;
@@ -405,11 +445,11 @@ function reproducirAudioFin() {
 
 async function startTimer() {
   if (running) return;
-  const grupo = document.getElementById("timer-grupo").value;
+  const grupo = grupoActual;
   const mins  = parseInt(document.getElementById("timer-input").value) || 40;
   const nivel = parseInt(document.getElementById("timer-nivel").value);
   if (!grupo) {
-    alert("Selecciona el grupo de la sesión.");
+    document.getElementById("timer-status").textContent = "Selecciona un grupo antes de iniciar.";
     return;
   }
   prepararAudioFin();
@@ -444,13 +484,14 @@ async function startTimer() {
 
   timerInterval = setInterval(() => {
     elapsed--;
+    saveTimerState();
     document.getElementById("timer-display").textContent = fmtTime(elapsed);
 
     // alerta de break
     const prog = totalSeconds - elapsed;
     if (prog > 0 && prog % breakInterval === 0) {
-      document.getElementById("break-alert").style.display = "block";
-      setTimeout(() => document.getElementById("break-alert").style.display = "none", 6000);
+      document.getElementById("break-alert").classList.add("is-visible");
+      setTimeout(() => document.getElementById("break-alert").classList.remove("is-visible"), 6000);
     }
 
     // advertencia últimos 2 min
@@ -470,6 +511,7 @@ async function startTimer() {
       });
       document.getElementById("btn-start").classList.remove("disabled");
       document.getElementById("btn-pause").classList.add("disabled");
+      clearTimerState();
     }
   }, 1000);
 }
@@ -482,6 +524,7 @@ function pauseTimer() {
   document.getElementById("btn-pause").classList.add("disabled");
   document.getElementById("timer-status").textContent = "⏸ Pausado";
   document.getElementById("timer-display").className = "timer-display";
+  saveTimerState();
 }
 
 async function resetTimer() {
@@ -496,8 +539,10 @@ async function resetTimer() {
   document.getElementById("timer-status").textContent = "Listo para iniciar";
   document.getElementById("btn-start").classList.remove("disabled");
   document.getElementById("btn-pause").classList.add("disabled");
-  document.getElementById("break-alert").style.display = "none";
+  document.getElementById("break-alert").classList.remove("is-visible");
+  clearTimerState();
 }
+restoreTimerState();
 </script>
 </body>
 </html>

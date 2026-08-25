@@ -16,4 +16,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'login
     }
 }
 
-require_once __DIR__ . '/../../app/views/login_administrador.php';
+require_once __DIR__ . '/../../app/views/administrador/login_administrador.php';
