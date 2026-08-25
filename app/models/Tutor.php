@@ -28,7 +28,33 @@ class Tutor
         return $existe;
     }
 
+        public function autenticar(string $correo, string $password): ?array
+    {
+        $sql = "SELECT id_tutor, nombre, cargo, correo, password_hash
+                FROM tutores
+                WHERE correo = ? AND estado = 'Activo'
+                LIMIT 1";
+        $statement = $this->connection->prepare($sql);
+        if (!$statement) throw new RuntimeException('No fue posible preparar el inicio de sesión del tutor.');
+        $statement->bind_param('s', $correo);
+        $statement->execute();
+        $tutor = $statement->get_result()->fetch_assoc() ?: null;
+        if (!$tutor || !password_verify($password, $tutor['password_hash'])) return null;
+        unset($tutor['password_hash']);
+        return $tutor;
+    }
+
+    public function obtener(int $idTutor): ?array
+    {
+        $statement = $this->connection->prepare("SELECT id_tutor, nombre, cargo, correo, telefono FROM tutores WHERE id_tutor = ? AND estado = 'Activo' LIMIT 1");
+        if (!$statement) throw new RuntimeException('No fue posible consultar el tutor.');
+        $statement->bind_param('i', $idTutor);
+        $statement->execute();
+        return $statement->get_result()->fetch_assoc() ?: null;
+    }
+
     public function registrar(
+
         string $nombre,
         string $cargo,
         string $correo,

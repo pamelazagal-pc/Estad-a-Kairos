@@ -55,7 +55,7 @@ function recursoYoutubeEmbed($url): string
             </div>
         </section>
         <section class="recursos-seccion">
-            <h2>Lecturas</h2>
+            <div class="recursos-seccion-cabecera"><div><h2>Lecturas</h2><p>Filtra cuentos y lecturas por la habilidad emocional que trabajan.</p></div><form class="recurso-filtro" method="get"><label for="categoria-lectura">Categoría</label><select id="categoria-lectura" name="categoria" onchange="this.form.submit()"><option value="">Todas las categorías</option><?php foreach (($categoriasLectura ?? []) as $categoria): ?><option value="<?= recursoEsc($categoria) ?>" <?= ($categoriaLectura ?? '') === $categoria ? 'selected' : '' ?>><?= recursoEsc($categoria) ?></option><?php endforeach; ?></select><noscript><button class="boton-secundario" type="submit">Filtrar</button></noscript></form></div>
             <div class="recursos-grid">
                 <?php if ($lecturas === []): ?><article class="panel-seccion recurso-vacio"><p>No hay lecturas activas publicadas.</p></article><?php endif; ?>
                 <?php foreach ($lecturas as $lectura): ?>

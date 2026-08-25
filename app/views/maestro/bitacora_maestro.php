@@ -97,7 +97,7 @@ $esc = static function ($valor): string {
                     <label for="filtro-tipo">Tipo</label>
                     <select id="filtro-tipo" name="tipo">
                         <option value="">Todos</option>
-                        <?php foreach (['Observacion' => 'Observación', 'Incidencia' => 'Incidencia', 'Logro' => 'Logro'] as $valor => $etiqueta): ?>
+                        <?php foreach (['Observacion' => 'Observación', 'Incidencia' => 'Incidencia', 'Logro' => 'Logro', 'Medalla' => 'Medalla'] as $valor => $etiqueta): ?>
                             <option value="<?= $valor ?>" <?= ($filtros['tipo'] ?? '') === $valor ? 'selected' : '' ?>><?= $etiqueta ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -114,10 +114,10 @@ $esc = static function ($valor): string {
         <h2>Historial de registros</h2>
         <div class="tabla-wrap">
             <table>
-                <thead><tr><th>Fecha</th><th>Alumno</th><th>Grupo</th><th>Tipo</th><th>Emoción</th><th>Contención</th><th>Descripción</th></tr></thead>
+                <thead><tr><th>Fecha</th><th>Alumno</th><th>Grupo</th><th>Tipo</th><th>Emoción</th><th>Contención</th><th>Medalla</th><th>Puntos</th><th>Descripción</th></tr></thead>
                 <tbody>
                 <?php if (!$historial): ?>
-                    <tr><td colspan="7" class="vacio">No hay registros que coincidan con los filtros.</td></tr>
+                    <tr><td colspan="9" class="vacio">No hay registros que coincidan con los filtros.</td></tr>
                 <?php else: foreach ($historial as $nota): ?>
                     <tr>
                         <td><?= $esc($nota['fecha_hora']) ?></td>
@@ -126,6 +126,8 @@ $esc = static function ($valor): string {
                         <td><?= $esc($nota['tipo_nota']) ?></td>
                         <td><?= $esc($nota['emocion'] ?: '—') ?></td>
                         <td><?= $esc($nota['accion_contencion'] ?: '—') ?></td>
+                        <td><?= $esc($nota['nombre_insignia'] ?: '—') ?></td>
+                        <td><?= (int)($nota['puntos_otorgados'] ?? 0) ?></td>
                         <td><?= $esc($nota['nota_descripcion']) ?></td>
                     </tr>
                 <?php endforeach; endif; ?>

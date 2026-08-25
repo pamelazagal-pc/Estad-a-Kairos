@@ -22,6 +22,7 @@ class MaestroDashboard
 'alumnos' => $sinSeleccion ? [] : $this->obtenerAlumnos($idDocente, $idGrupo),
             'incidencias' => $sinSeleccion ? [] : $this->obtenerIncidencias($idDocente, $idGrupo),
             'kpis' => $sinSeleccion ? ['alumnos' => 0, 'atencion' => 0, 'crisis' => 0, 'contenciones' => 0] : $this->obtenerKpis($idDocente, $idGrupo),
+            'recompensas' => $this->obtenerRecompensas(),
         ];
     }
 
@@ -52,6 +53,7 @@ class MaestroDashboard
         $sql = "SELECT a.id_alumno,
                        CONCAT_WS(' ', a.nombre, a.apellido_paterno, a.apellido_materno) AS nombre_completo,
                        a.estado_semaforo,
+                       a.puntos_acumulados,
                        g.id_grupo,
                        CONCAT(g.grado, '° ', g.grupo) AS grupo,
                        COALESCE(MAX(b.fecha_hora), NULL) AS ultima_actualizacion,
@@ -68,7 +70,8 @@ class MaestroDashboard
                 WHERE dg.id_docente = ? AND dg.estado = 'Activo'
                   AND g.estado = 'Activo' AND a.estado = 'Activo'" . ($idGrupo !== null ? " AND g.id_grupo = ?" : '') . "
                 GROUP BY a.id_alumno, a.nombre, a.apellido_paterno, a.apellido_materno,
-                         a.estado_semaforo, g.id_grupo, g.grado, g.grupo
+                                                  a.estado_semaforo, a.puntos_acumulados, g.id_grupo, g.grado, g.grupo
+
                 ORDER BY g.grado, g.grupo, a.apellido_paterno, a.apellido_materno, a.nombre";
         $stmt = $this->connection->prepare($sql);
         if ($idGrupo !== null) $stmt->bind_param('ii', $idDocente, $idGrupo); else $stmt->bind_param('i', $idDocente);
@@ -139,16 +142,57 @@ class MaestroDashboard
         return $stmt->get_result()->num_rows === 1;
     }
 
+        public function obtenerRecompensas(): array
+    {
+        $resultado = $this->connection->query("SELECT id_recompensa, nombre_insignia, descripcion, puntos_otorgados, icono_url
+                                               FROM recompensas_catalogo
+                                               WHERE estado = 'Activo'
+                                               ORDER BY nombre_insignia ASC");
+        if (!$resultado) throw new RuntimeException('No fue posible cargar el catálogo de medallas.');
+        return $resultado->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function asignarMedalla(int $idDocente, int $idAlumno, int $idRecompensa, string $descripcion): bool
+    {
+        $descripcion = trim($descripcion);
+        if ($descripcion === '') throw new InvalidArgumentException('Escribe una breve descripción del logro.');
+        if (mb_strlen($descripcion) > 1000) throw new InvalidArgumentException('La descripción no puede superar los 1000 caracteres.');
+        if (!$this->alumnoAsignado($idDocente, $idAlumno)) throw new RuntimeException('El alumno no pertenece a un grupo asignado a este maestro.');
+        $stmt = $this->connection->prepare("SELECT puntos_otorgados FROM recompensas_catalogo WHERE id_recompensa = ? AND estado = 'Activo' LIMIT 1");
+        $stmt->bind_param('i', $idRecompensa);
+        $stmt->execute();
+        $recompensa = $stmt->get_result()->fetch_assoc();
+        if (!$recompensa) throw new RuntimeException('La medalla seleccionada no está disponible.');
+        $puntos = (int)$recompensa['puntos_otorgados'];
+        $tipo = 'Medalla';
+        $this->connection->begin_transaction();
+        try {
+            $insertar = $this->connection->prepare('INSERT INTO bitacora_notas (id_alumno, id_docente, tipo_nota, nota_descripcion, id_recompensa, puntos_otorgados) VALUES (?, ?, ?, ?, ?, ?)');
+            $insertar->bind_param('iissii', $idAlumno, $idDocente, $tipo, $descripcion, $idRecompensa, $puntos);
+            if (!$insertar->execute()) throw new RuntimeException($insertar->error);
+            $actualizar = $this->connection->prepare('UPDATE alumnos SET puntos_acumulados = puntos_acumulados + ? WHERE id_alumno = ?');
+            $actualizar->bind_param('ii', $puntos, $idAlumno);
+            if (!$actualizar->execute()) throw new RuntimeException($actualizar->error);
+            $this->connection->commit();
+        } catch (Throwable $exception) {
+            $this->connection->rollback();
+            throw $exception;
+        }
+        return true;
+    }
+
     public function historial(int $idDocente, ?int $idAlumno = null, string $tipo = '', string $emocion = '', string $desde = '', string $hasta = ''): array
+
     {
         $sql = "SELECT DISTINCT b.id_nota, b.id_alumno, b.tipo_nota, b.emocion, b.nota_descripcion,
-                       b.accion_contencion, b.notificado_al_tutor, b.fecha_hora,
+                       b.accion_contencion, b.notificado_al_tutor, b.fecha_hora, r.nombre_insignia, b.puntos_otorgados,
                        CONCAT_WS(' ', a.nombre, a.apellido_paterno, a.apellido_materno) AS alumno,
                        CONCAT(g.grado, '° ', g.grupo) AS grupo
                 FROM bitacora_notas b
                 INNER JOIN alumnos a ON a.id_alumno = b.id_alumno
                 INNER JOIN grupos g ON g.id_grupo = a.id_grupo
                 INNER JOIN docente_grupos dg ON dg.id_grupo = a.id_grupo
+                LEFT JOIN recompensas_catalogo r ON r.id_recompensa = b.id_recompensa
                 WHERE b.id_docente = ? AND dg.id_docente = ? AND dg.estado = 'Activo'
                   AND a.estado = 'Activo' AND g.estado = 'Activo'";
         $tipos = 'ii';
