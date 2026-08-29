@@ -121,7 +121,40 @@ class AlumnoTutor
         }
     }
 
+    public function existeRelacionActiva(int $idAlumno, int $idTutor): bool
+    {
+        $statement = $this->connection->prepare("SELECT id_alumno_tutor FROM alumno_tutores WHERE id_alumno = ? AND id_tutor = ? AND estado = 'Activo' LIMIT 1");
+        if (!$statement) throw new RuntimeException('No fue posible comprobar la relación: ' . $this->connection->error);
+        $statement->bind_param('ii', $idAlumno, $idTutor);
+        $statement->execute();
+        $statement->store_result();
+        $existe = $statement->num_rows > 0;
+        $statement->close();
+        return $existe;
+    }
+
+    public function datosRelacion(int $idAlumno, int $idTutor): ?array
+    {
+        $statement = $this->connection->prepare("SELECT
+                       CONCAT(a.nombre, ' ', a.apellido_paterno, ' ', COALESCE(a.apellido_materno, '')) AS alumno,
+                       g.grado, g.grupo, g.ciclo_escolar,
+                       t.nombre AS tutor, t.correo, at.parentesco
+                FROM alumno_tutores at
+                INNER JOIN alumnos a ON a.id_alumno = at.id_alumno
+                INNER JOIN grupos g ON g.id_grupo = a.id_grupo
+                INNER JOIN tutores t ON t.id_tutor = at.id_tutor
+                WHERE at.id_alumno = ? AND at.id_tutor = ? AND at.estado = 'Activo'
+                ORDER BY at.id_alumno_tutor DESC LIMIT 1");
+        if (!$statement) throw new RuntimeException('No fue posible consultar la relación: ' . $this->connection->error);
+        $statement->bind_param('ii', $idAlumno, $idTutor);
+        $statement->execute();
+        $fila = $statement->get_result()->fetch_assoc() ?: null;
+        $statement->close();
+        return $fila;
+    }
+
     public function cambiarEstado(int $idRelacion, string $estado): bool
+
     {
         if (!in_array($estado, ['Activo', 'Inactivo'], true)) {
             throw new InvalidArgumentException('Estado no válido.');

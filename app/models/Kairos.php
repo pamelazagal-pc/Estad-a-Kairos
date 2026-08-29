@@ -84,7 +84,8 @@ class Kairos
         $sql = "SELECT b.id_nota, b.id_alumno, b.emocion, b.accion_contencion, b.nota_descripcion, b.fecha_hora,
                        CONCAT(a.nombre, ' ', a.apellido_paterno, ' ', COALESCE(a.apellido_materno, '')) AS alumno
                 FROM bitacora_notas b INNER JOIN alumnos a ON a.id_alumno = b.id_alumno
-                WHERE b.tipo_nota = 'Incidencia' ORDER BY b.fecha_hora DESC LIMIT 50";
+                WHERE b.tipo_nota = 'Incidencia' AND b.estado = 'Activo' ORDER BY b.fecha_hora DESC LIMIT 50";
+
         $resultado = $this->connection->query($sql);
         if (!$resultado) {
             throw new RuntimeException($this->connection->error);
@@ -115,9 +116,10 @@ class Kairos
     {
         $sql = "SELECT
             (SELECT COUNT(*) FROM alumnos WHERE estado = 'Activo') AS alumnos,
-            (SELECT COUNT(*) FROM bitacora_notas WHERE tipo_nota = 'Incidencia' AND fecha_hora >= NOW() - INTERVAL 7 DAY) AS incidencias,
-            (SELECT COUNT(*) FROM bitacora_notas WHERE tipo_nota = 'Incidencia' AND accion_contencion IS NOT NULL AND accion_contencion <> '' AND fecha_hora >= NOW() - INTERVAL 7 DAY) AS contenciones,
-            (SELECT COUNT(*) FROM bitacora_notas WHERE tipo_nota = 'Incidencia' AND (notificado_al_tutor = 0 OR notificado_al_tutor IS NULL)) AS pendientes";
+            (SELECT COUNT(*) FROM bitacora_notas WHERE tipo_nota = 'Incidencia' AND estado = 'Activo' AND fecha_hora >= NOW() - INTERVAL 7 DAY) AS incidencias,
+            (SELECT COUNT(*) FROM bitacora_notas WHERE tipo_nota = 'Incidencia' AND estado = 'Activo' AND accion_contencion IS NOT NULL AND accion_contencion <> '' AND fecha_hora >= NOW() - INTERVAL 7 DAY) AS contenciones,
+            (SELECT COUNT(*) FROM bitacora_notas WHERE tipo_nota = 'Incidencia' AND estado = 'Activo' AND (notificado_al_tutor = 0 OR notificado_al_tutor IS NULL)) AS pendientes
+";
         $resultado = $this->connection->query($sql);
         if (!$resultado) {
             throw new RuntimeException($this->connection->error);
@@ -135,7 +137,8 @@ class Kairos
 
     private function actualizarSemaforo(int $alumno): void
     {
-        $statement = $this->connection->prepare("SELECT COUNT(*) total, MAX(fecha_hora) ultima FROM bitacora_notas WHERE id_alumno = ? AND tipo_nota = 'Incidencia' AND fecha_hora >= NOW() - INTERVAL 24 HOUR");
+        $statement = $this->connection->prepare("SELECT COUNT(*) total, MAX(fecha_hora) ultima FROM bitacora_notas WHERE id_alumno = ? AND tipo_nota = 'Incidencia' AND estado = 'Activo' AND fecha_hora >= NOW() - INTERVAL 24 HOUR
+");
         $statement->bind_param('i', $alumno);
         $statement->execute();
         $datos = $statement->get_result()->fetch_assoc();

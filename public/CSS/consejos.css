@@ -1,0 +1,383 @@
+/* Estilos propios del módulo Consejos para el hogar.
+   No contiene reglas globales para body, sidebar o main; así no interfiere
+   con la estructura del dashboard administrativo ni del dashboard del maestro. */
+
+.consejos-main {
+    flex: 1;
+    min-width: 0;
+    min-height: 100vh;
+    overflow-y: auto;
+}
+
+.consejos-content {
+    min-width: 0;
+    padding: 26px 30px 42px;
+}
+
+.consejos-content .consejos-heading,
+.consejos-admin .encabezado-seccion {
+    margin-bottom: 22px;
+}
+
+.consejos-content .eyebrow-admin,
+.consejos-admin .eyebrow-admin {
+    margin-bottom: 7px;
+    color: var(--upemor-green, #009b82);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+
+.consejos-content h1,
+.consejos-admin h1 {
+    margin: 0 0 8px;
+    color: var(--upemor-purple-d, #4e2d78);
+    font-family: 'Nunito', Arial, sans-serif;
+    font-size: clamp(24px, 3vw, 34px);
+    line-height: 1.1;
+}
+
+.consejos-content .consejos-heading > div > p:last-child,
+.consejos-admin .encabezado-seccion > div > p:last-child {
+    max-width: 720px;
+    color: var(--text-muted, #6b7f8e);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.consejos-content .contenido-dos-columnas,
+.consejos-admin .contenido-dos-columnas {
+    display: grid;
+    grid-template-columns: minmax(280px, .78fr) minmax(420px, 1.22fr);
+    align-items: start;
+    gap: 20px;
+}
+
+.consejos-content .tarjeta-admin,
+.consejos-admin .tarjeta-admin {
+    min-width: 0;
+    padding: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border, #e0e6ed);
+    border-radius: var(--radius-lg, 14px);
+    background: var(--surface, #ffffff);
+    box-shadow: var(--shadow-card, 0 2px 10px rgba(0,0,0,.07));
+}
+
+.consejos-content .tarjeta-admin h2,
+.consejos-admin .tarjeta-admin h2 {
+    margin: 0 0 8px;
+    color: var(--upemor-purple-d, #4e2d78);
+    font-family: 'Nunito', Arial, sans-serif;
+    font-size: 18px;
+}
+
+.consejos-content .panel-nota,
+.consejos-admin .panel-nota {
+    margin: 0 0 18px;
+    color: var(--text-muted, #6b7f8e);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.consejos-content .formulario-admin,
+.consejos-admin .formulario-admin {
+    display: grid;
+    gap: 8px;
+}
+
+.consejos-content .formulario-admin label,
+.consejos-admin .formulario-admin label {
+    margin-top: 5px;
+    color: var(--text-main, #1c2b36);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.consejos-content .formulario-admin input,
+.consejos-content .formulario-admin textarea,
+.consejos-content .formulario-admin select,
+.consejos-admin .formulario-admin input,
+.consejos-admin .formulario-admin textarea,
+.consejos-admin .formulario-admin select {
+    width: 100%;
+    border: 1px solid var(--border, #e0e6ed);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text-main, #1c2b36);
+    font: inherit;
+    font-size: 13px;
+    padding: 10px 11px;
+}
+
+.consejos-content .formulario-admin textarea,
+.consejos-admin .formulario-admin textarea {
+    min-height: 170px;
+    resize: vertical;
+}
+
+.consejos-content .formulario-admin input:focus,
+.consejos-content .formulario-admin textarea:focus,
+.consejos-content .formulario-admin select:focus,
+.consejos-admin .formulario-admin input:focus,
+.consejos-admin .formulario-admin textarea:focus,
+.consejos-admin .formulario-admin select:focus {
+    outline: 3px solid rgba(0, 155, 130, .16);
+    border-color: var(--upemor-green, #009b82);
+}
+
+.consejos-content .boton,
+.consejos-admin .boton,
+.consejos-content .boton-secundario,
+.consejos-admin .boton-secundario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    margin-top: 9px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.consejos-content .boton,
+.consejos-admin .boton {
+    background: var(--upemor-green, #009b82);
+    color: #ffffff;
+}
+
+.consejos-content .boton:hover,
+.consejos-admin .boton:hover {
+    background: var(--upemor-green-d, #00705e);
+}
+
+.consejos-content .boton-secundario,
+.consejos-admin .boton-secundario {
+    border-color: var(--border, #e0e6ed);
+    color: var(--upemor-purple-d, #4e2d78);
+    background: #ffffff;
+}
+
+.consejos-content .boton-secundario:hover,
+.consejos-admin .boton-secundario:hover {
+    border-color: var(--upemor-green, #009b82);
+    background: var(--upemor-green-l, #e6f5f2);
+}
+
+.consejos-content .encabezado-tabla,
+.consejos-admin .encabezado-tabla {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 16px;
+}
+
+.consejos-content .encabezado-tabla h2,
+.consejos-admin .encabezado-tabla h2 {
+    margin-bottom: 4px;
+}
+
+.consejos-content .encabezado-tabla .panel-nota,
+.consejos-admin .encabezado-tabla .panel-nota {
+    margin-bottom: 0;
+}
+
+.consejos-content .encabezado-tabla select,
+.consejos-admin .encabezado-tabla select {
+    min-width: 110px;
+    padding: 8px 9px;
+    border: 1px solid var(--border, #e0e6ed);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text-main, #1c2b36);
+    font-size: 12px;
+}
+
+.consejos-content .tabla-scroll,
+.consejos-admin .tabla-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.consejos-content .tabla-admin,
+.consejos-admin .tabla-admin {
+    width: 100%;
+    min-width: 570px;
+    border-collapse: collapse;
+    color: var(--text-main, #1c2b36);
+    font-size: 12px;
+}
+
+.consejos-content .tabla-admin th,
+.consejos-content .tabla-admin td,
+.consejos-admin .tabla-admin th,
+.consejos-admin .tabla-admin td {
+    padding: 11px 9px;
+    border-bottom: 1px solid var(--border, #e0e6ed);
+    text-align: left;
+    vertical-align: top;
+}
+
+.consejos-content .tabla-admin th,
+.consejos-admin .tabla-admin th {
+    color: var(--text-muted, #6b7f8e);
+    font-size: 10px;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+}
+
+.consejos-content .tabla-admin td strong,
+.consejos-admin .tabla-admin td strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.consejos-content .tabla-admin details,
+.consejos-admin .tabla-admin details {
+    color: var(--text-muted, #6b7f8e);
+    font-size: 11px;
+}
+
+.consejos-content .tabla-admin details summary,
+.consejos-admin .tabla-admin details summary {
+    cursor: pointer;
+    color: var(--upemor-green-d, #00705e);
+    font-weight: 700;
+}
+
+.consejos-content .tabla-admin details p,
+.consejos-admin .tabla-admin details p {
+    min-width: 180px;
+    max-width: 320px;
+    margin-top: 6px;
+    line-height: 1.45;
+    white-space: normal;
+}
+
+.consejos-content .acciones-tabla,
+.consejos-admin .acciones-tabla {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.consejos-content .boton-tabla,
+.consejos-admin .boton-tabla {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 5px 8px;
+    border: 1px solid var(--border, #e0e6ed);
+    border-radius: 6px;
+    background: #ffffff;
+    color: var(--upemor-purple-d, #4e2d78);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.consejos-content .boton-tabla:hover,
+.consejos-admin .boton-tabla:hover {
+    border-color: var(--upemor-green, #009b82);
+}
+
+.consejos-content .boton-peligro,
+.consejos-admin .boton-peligro {
+    border-color: #b33a45;
+    background: #b33a45;
+    color: #ffffff;
+}
+
+.consejos-content .boton-exito,
+.consejos-admin .boton-exito {
+    border-color: #2e8b57;
+    background: #2e8b57;
+    color: #ffffff;
+}
+
+.consejos-content .estado,
+.consejos-admin .estado {
+    display: inline-flex;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: #eef2f4;
+    color: #5a6973;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.consejos-content .estado.activo,
+.consejos-admin .estado.activo {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.consejos-content .estado.inactivo,
+.consejos-admin .estado.inactivo {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.consejos-content .alerta,
+.consejos-admin .alerta {
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.consejos-content .alerta p,
+.consejos-admin .alerta p {
+    margin: 0;
+}
+
+.consejos-content .alerta.error,
+.consejos-admin .alerta.error {
+    border: 1px solid #ffcdd2;
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.consejos-content .alerta.ok,
+.consejos-admin .alerta.ok {
+    border: 1px solid #c8e6c9;
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 980px) {
+    .consejos-content .contenido-dos-columnas,
+    .consejos-admin .contenido-dos-columnas {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .consejos-content {
+        padding: 20px 16px 32px;
+    }
+
+    .consejos-content .encabezado-tabla,
+    .consejos-admin .encabezado-tabla {
+        flex-direction: column;
+    }
+}

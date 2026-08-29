@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../models/Maestro.php';
+require_once __DIR__ . '/../services/BienvenidaMailer.php';
+require_once __DIR__ . '/../services/AccesoMailer.php';
 
 class MaestroController
 {
@@ -37,7 +39,15 @@ class MaestroController
             $_SESSION['maestro_id'] = (int)$maestro['id_docente'];
             $_SESSION['maestro_nombre'] = $maestro['nombre'];
             $_SESSION['maestro_correo'] = $maestro['correo'];
+
+            try {
+                (new AccesoMailer())->enviar('maestro', $maestro['nombre'], $maestro['correo']);
+            } catch (Throwable $mailException) {
+                error_log('Alerta de acceso maestro: ' . $mailException->getMessage());
+            }
+
             return ['ok' => true, 'errores' => []];
+
         } catch (Throwable $exception) {
             error_log($exception->getMessage());
             return ['ok' => false, 'errores' => ['No fue posible iniciar sesión.']];
@@ -113,9 +123,18 @@ class MaestroController
                 ];
             }
 
+            $mensaje = 'Maestro registrado correctamente.';
+            try {
+                (new BienvenidaMailer())->enviar('maestro', $datos['nombre'], $datos['correo']);
+                $mensaje .= ' Se envió el correo de bienvenida.';
+            } catch (Throwable $mailException) {
+                error_log($mailException->getMessage());
+                $mensaje .= ' La cuenta se creó, pero no fue posible enviar el correo de bienvenida.';
+            }
+
             return [
                 'ok' => true,
-                'mensaje' => 'Maestro registrado correctamente.',
+                'mensaje' => $mensaje,
                 'datos' => [],
             ];
         } catch (Throwable $exception) {

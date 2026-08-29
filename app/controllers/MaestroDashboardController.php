@@ -28,6 +28,7 @@ class MaestroDashboardController
                 $emocion = trim($_POST['emocion'] ?? '');
                 $accionContencion = trim($_POST['accion_contencion'] ?? '');
                 $descripcion = trim($_POST['descripcion'] ?? '');
+                $notificarTutor = ($_POST['notificar_tutor'] ?? '') === '1';
 
                 if (!$idAlumno) $resultado['errores'][] = 'Selecciona un alumno válido.';
                 if ($emocion === '') $resultado['errores'][] = 'Selecciona la emoción detectada.';
@@ -36,7 +37,7 @@ class MaestroDashboardController
                 if (mb_strlen($descripcion) > 1000) $resultado['errores'][] = 'La descripción no puede superar los 1000 caracteres.';
 
                 if ($resultado['errores'] === []) {
-                    $this->model->registrarIncidencia($idDocente, (int)$idAlumno, $emocion, $accionContencion, $descripcion);
+                    $this->model->registrarIncidencia($idDocente, (int)$idAlumno, $emocion, $accionContencion, $descripcion, $notificarTutor);
                     $resultado['ok'] = true;
                     $resultado['mensaje'] = 'Incidencia registrada correctamente.';
                 }
@@ -44,12 +45,13 @@ class MaestroDashboardController
                 $idAlumno = filter_input(INPUT_POST, 'id_alumno', FILTER_VALIDATE_INT);
                 $idRecompensa = filter_input(INPUT_POST, 'id_recompensa', FILTER_VALIDATE_INT);
                 $descripcion = trim($_POST['descripcion_medalla'] ?? '');
+                $notificarTutor = ($_POST['notificar_tutor'] ?? '') === '1';
                 if (!$idAlumno) $resultado['errores'][] = 'Selecciona un alumno válido.';
                 if (!$idRecompensa) $resultado['errores'][] = 'Selecciona una medalla válida.';
                 if ($descripcion === '') $resultado['errores'][] = 'Describe brevemente el logro reconocido.';
                 if (mb_strlen($descripcion) > 1000) $resultado['errores'][] = 'La descripción no puede superar los 1000 caracteres.';
                 if ($resultado['errores'] === []) {
-                    $this->model->asignarMedalla($idDocente, (int)$idAlumno, (int)$idRecompensa, $descripcion);
+                    $this->model->asignarMedalla($idDocente, (int)$idAlumno, (int)$idRecompensa, $descripcion, null, $notificarTutor);
                     $resultado['ok'] = true;
                     $resultado['mensaje'] = 'Medalla y puntos asignados correctamente.';
                 }

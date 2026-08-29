@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../models/Administrador.php';
+require_once __DIR__ . '/../services/BienvenidaMailer.php';
+require_once __DIR__ . '/../services/AccesoMailer.php';
 
 class AdministradorController
 {
@@ -46,7 +48,14 @@ class AdministradorController
             $_SESSION['administrador_principal'] = (int) $administrador['es_principal'] === 1;
             $_SESSION['debe_cambiar_password'] = (int) $administrador['debe_cambiar_password'] === 1;
 
+            try {
+                (new AccesoMailer())->enviar('administrador', $administrador['nombre'], $administrador['correo']);
+            } catch (Throwable $mailException) {
+                error_log('Alerta de acceso administrador: ' . $mailException->getMessage());
+            }
+
             return ['ok' => true, 'errores' => []];
+
         } catch (Throwable $exception) {
             error_log($exception->getMessage());
             return ['ok' => false, 'errores' => [$exception->getMessage()]];
@@ -93,7 +102,15 @@ class AdministradorController
             }
 
             $this->administradorModel->registrar($nombre, $correo, $password, false);
-            return ['ok' => true, 'mensaje' => 'Administrador registrado correctamente.', 'errores' => []];
+            $mensaje = 'Administrador registrado correctamente.';
+            try {
+                (new BienvenidaMailer())->enviar('administrador', $nombre, $correo);
+                $mensaje .= ' Se envió el correo de bienvenida.';
+            } catch (Throwable $mailException) {
+                error_log($mailException->getMessage());
+                $mensaje .= ' La cuenta se creó, pero no fue posible enviar el correo de bienvenida.';
+            }
+            return ['ok' => true, 'mensaje' => $mensaje, 'errores' => []];
         } catch (Throwable $exception) {
             error_log($exception->getMessage());
             return ['ok' => false, 'errores' => [$exception->getMessage()]];
@@ -139,7 +156,15 @@ class AdministradorController
             }
 
             $this->administradorModel->registrar($nombre, $correo, $password, true);
-            return ['ok' => true, 'mensaje' => 'Administrador principal creado correctamente.', 'errores' => []];
+            $mensaje = 'Administrador principal creado correctamente.';
+            try {
+                (new BienvenidaMailer())->enviar('administrador', $nombre, $correo);
+                $mensaje .= ' Se envió el correo de bienvenida.';
+            } catch (Throwable $mailException) {
+                error_log($mailException->getMessage());
+                $mensaje .= ' La cuenta se creó, pero no fue posible enviar el correo de bienvenida.';
+            }
+            return ['ok' => true, 'mensaje' => $mensaje, 'errores' => []];
         } catch (Throwable $exception) {
             error_log($exception->getMessage());
             return ['ok' => false, 'errores' => [$exception->getMessage()]];

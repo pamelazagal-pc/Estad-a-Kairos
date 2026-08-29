@@ -90,7 +90,38 @@ class DocenteGrupo
         return true;
     }
 
+    public function existeAsignacionActiva(int $idDocente, int $idGrupo, string $cicloEscolar): bool
+    {
+        $statement = $this->connection->prepare("SELECT id_docente_grupo FROM docente_grupos WHERE id_docente = ? AND id_grupo = ? AND ciclo_escolar = ? AND estado = 'Activo' LIMIT 1");
+        if (!$statement) throw new RuntimeException('No fue posible comprobar la asignación: ' . $this->connection->error);
+        $statement->bind_param('iis', $idDocente, $idGrupo, $cicloEscolar);
+        $statement->execute();
+        $statement->store_result();
+        $existe = $statement->num_rows > 0;
+        $statement->close();
+        return $existe;
+    }
+
+    public function datosAsignacion(int $idDocente, int $idGrupo, string $cicloEscolar): ?array
+    {
+        $statement = $this->connection->prepare("SELECT d.nombre AS docente, d.correo,
+                       g.grado, g.grupo, dg.ciclo_escolar
+                FROM docente_grupos dg
+                INNER JOIN docentes d ON d.id_docente = dg.id_docente
+                INNER JOIN grupos g ON g.id_grupo = dg.id_grupo
+                WHERE dg.id_docente = ? AND dg.id_grupo = ? AND dg.ciclo_escolar = ?
+                  AND dg.estado = 'Activo'
+                ORDER BY dg.id_docente_grupo DESC LIMIT 1");
+        if (!$statement) throw new RuntimeException('No fue posible consultar la asignación: ' . $this->connection->error);
+        $statement->bind_param('iis', $idDocente, $idGrupo, $cicloEscolar);
+        $statement->execute();
+        $fila = $statement->get_result()->fetch_assoc() ?: null;
+        $statement->close();
+        return $fila;
+    }
+
     public function cambiarEstado(int $idAsignacion, string $estado): bool
+
     {
         if (!in_array($estado, ['Activo', 'Inactivo'], true)) {
             return false;

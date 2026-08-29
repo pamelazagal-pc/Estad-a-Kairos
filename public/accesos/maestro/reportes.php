@@ -7,7 +7,7 @@ if (!isset($_SESSION['maestro_id'])) {
 require_once __DIR__ . '/../../../config/db_connection.php';
 require_once __DIR__ . '/../../../app/controllers/BitacoraMaestroController.php';
 $controller = new BitacoraMaestroController($connection);
-$resultado = $controller->ejecutar((int)$_SESSION['maestro_id']);
+$resultado = $controller->ejecutar((int)$_SESSION['maestro_id'], true);
 $datos = $resultado['datos'] ?? [];
 $filtros = $resultado['filtros'] ?? [];
 require_once __DIR__ . '/../../../app/views/maestro/reportes.php';

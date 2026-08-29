@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../models/DocenteGrupo.php';
+require_once __DIR__ . '/../services/AsignacionMailer.php';
 
 class DocenteGrupoController
 {
@@ -36,8 +37,26 @@ class DocenteGrupoController
         if ($ciclo === '' || strlen($ciclo) > 20) $errores[] = 'Escribe un ciclo escolar válido de máximo 20 caracteres.';
         if ($errores !== []) return ['ok' => false, 'errores' => $errores];
         try {
+            $yaEstabaActiva = $this->modelo->existeAsignacionActiva((int)$idDocente, (int)$idGrupo, $ciclo);
             $this->modelo->guardar((int)$idDocente, (int)$idGrupo, $ciclo, $esTitular);
-            return ['ok' => true, 'mensaje' => 'Maestro asignado al grupo correctamente.', 'errores' => []];
+            $mensaje = 'Maestro asignado al grupo correctamente.';
+            if ($yaEstabaActiva) {
+                return ['ok' => true, 'mensaje' => $mensaje . ' La asignación ya estaba activa; no se envió un correo duplicado.', 'errores' => []];
+            }
+            try {
+                $datos = $this->modelo->datosAsignacion((int)$idDocente, (int)$idGrupo, $ciclo);
+                if ($datos && !empty($datos['correo'])) {
+                    (new AsignacionMailer())->enviarGrupoMaestro($datos);
+                    $mensaje .= ' Se envió el aviso al correo del maestro.';
+                } else {
+                    $mensaje .= ' No se encontró un correo válido para enviar el aviso.';
+                }
+            } catch (Throwable $mailException) {
+                error_log('Aviso de asignación docente-grupo: ' . $mailException->getMessage());
+                $mensaje .= ' La asignación se guardó, pero no fue posible enviar el correo.';
+            }
+            return ['ok' => true, 'mensaje' => $mensaje, 'errores' => []];
+
         } catch (Throwable $exception) {
             error_log($exception->getMessage());
             return ['ok' => false, 'errores' => [$exception->getMessage()]];

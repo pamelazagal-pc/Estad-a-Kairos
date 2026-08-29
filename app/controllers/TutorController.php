@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Tutor.php';
 require_once __DIR__ . '/../models/TutorDashboard.php';
+require_once __DIR__ . '/../services/AccesoMailer.php';
 
 class TutorController
 {
@@ -27,7 +28,16 @@ class TutorController
             session_regenerate_id(true);
             $_SESSION['tutor_id'] = (int)$cuenta['id_tutor'];
             $_SESSION['tutor_nombre'] = $cuenta['nombre'];
+            $_SESSION['tutor_correo'] = $cuenta['correo'];
+
+            try {
+                (new AccesoMailer())->enviar('tutor', $cuenta['nombre'], $cuenta['correo']);
+            } catch (Throwable $mailException) {
+                error_log('Alerta de acceso tutor: ' . $mailException->getMessage());
+            }
+
             return ['ok' => true, 'errores' => [], 'datos' => $cuenta];
+
         } catch (Throwable $exception) {
             error_log($exception->getMessage());
             return ['ok' => false, 'errores' => ['No fue posible iniciar sesión.'], 'datos' => ['correo' => $correo]];

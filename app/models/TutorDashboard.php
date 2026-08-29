@@ -23,6 +23,7 @@ class TutorDashboard
             'medallas' => $idAlumno ? $this->obtenerMedallas($idTutor, $idAlumno) : [],
             'consejos' => $this->obtenerConsejos(),
             'notificaciones' => $idAlumno ? $this->obtenerNotificaciones($idTutor, $idAlumno) : [],
+            'sesiones' => $idAlumno ? $this->obtenerSesiones($idTutor, $idAlumno) : [],
         ];
     }
 
@@ -42,7 +43,11 @@ class TutorDashboard
                        a.estado_semaforo, a.puntos_acumulados,
                        CONCAT(g.grado, '° ', g.grupo) AS grupo,
                        g.ciclo_escolar,
-                       at.parentesco, at.es_principal
+                       at.parentesco, at.es_principal,
+                       (SELECT MAX(b.fecha_hora) FROM bitacora_notas b WHERE b.id_alumno = a.id_alumno AND b.estado = 'Activo') AS ultima_actualizacion,
+                       (SELECT b2.emocion FROM bitacora_notas b2 WHERE b2.id_alumno = a.id_alumno AND b2.estado = 'Activo' ORDER BY b2.fecha_hora DESC, b2.id_nota DESC LIMIT 1) AS ultima_emocion,
+                       (SELECT b3.accion_contencion FROM bitacora_notas b3 WHERE b3.id_alumno = a.id_alumno AND b3.estado = 'Activo' ORDER BY b3.fecha_hora DESC, b3.id_nota DESC LIMIT 1) AS ultima_accion
+
                 FROM alumno_tutores at
                 INNER JOIN alumnos a ON a.id_alumno = at.id_alumno
                 INNER JOIN grupos g ON g.id_grupo = a.id_grupo
@@ -83,8 +88,9 @@ class TutorDashboard
                 INNER JOIN docentes d ON d.id_docente = b.id_docente
                 INNER JOIN alumno_tutores at ON at.id_alumno = a.id_alumno
                 WHERE at.id_tutor = ? AND at.estado = 'Activo' AND b.id_alumno = ?
-                  AND a.estado = 'Activo'
+                                    AND a.estado = 'Activo' AND b.estado = 'Activo'
                 ORDER BY b.fecha_hora DESC LIMIT 30";
+
         $stmt = $this->connection->prepare($sql);
         if (!$stmt) throw new RuntimeException('No fue posible cargar el seguimiento emocional.');
         $stmt->bind_param('ii', $idTutor, $idAlumno);
@@ -101,7 +107,8 @@ class TutorDashboard
                 INNER JOIN docentes d ON d.id_docente = b.id_docente
                 INNER JOIN alumno_tutores at ON at.id_alumno = b.id_alumno
                 WHERE at.id_tutor = ? AND at.estado = 'Activo'
-                  AND b.id_alumno = ? AND b.tipo_nota = 'Medalla'
+                                    AND b.id_alumno = ? AND b.tipo_nota = 'Medalla' AND b.estado = 'Activo'
+
                 ORDER BY b.fecha_hora DESC LIMIT 30";
         $stmt = $this->connection->prepare($sql);
         if (!$stmt) throw new RuntimeException('No fue posible cargar las medallas.');
@@ -126,12 +133,33 @@ class TutorDashboard
                        b.nota_descripcion, b.notificado_al_tutor,
                        d.nombre AS docente
                 FROM bitacora_notas b
-                INNER JOIN docentes d ON d.id_docente = b.id_docente
+                INNER JOIN docentes d ON d.id_docente = b.id_docente AND d.estado = 'Activo'
                 INNER JOIN alumno_tutores at ON at.id_alumno = b.id_alumno
                 WHERE at.id_tutor = ? AND at.estado = 'Activo' AND b.id_alumno = ?
+                  AND b.notificado_al_tutor = 1 AND b.estado = 'Activo'
                 ORDER BY b.fecha_hora DESC LIMIT 8";
         $stmt = $this->connection->prepare($sql);
         if (!$stmt) throw new RuntimeException('No fue posible cargar las notificaciones.');
+        $stmt->bind_param('ii', $idTutor, $idAlumno);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    private function obtenerSesiones(int $idTutor, int $idAlumno): array
+    {
+        $sql = "SELECT DISTINCT s.id_sesion, s.fecha, s.fecha_inicio, s.fecha_fin,
+                       s.duracion_clase_min, s.nivel_irritabilidad, s.estado,
+                       d.nombre AS docente
+                FROM sesiones_temporizador s
+                INNER JOIN alumnos a ON a.id_grupo = s.id_grupo
+                INNER JOIN grupos g ON g.id_grupo = a.id_grupo
+                INNER JOIN alumno_tutores at ON at.id_alumno = a.id_alumno
+                INNER JOIN docentes d ON d.id_docente = s.id_docente AND d.estado = 'Activo'
+                WHERE at.id_tutor = ? AND at.estado = 'Activo'
+                  AND a.id_alumno = ? AND a.estado = 'Activo' AND g.estado = 'Activo'
+                ORDER BY s.fecha_inicio DESC LIMIT 20";
+        $stmt = $this->connection->prepare($sql);
+        if (!$stmt) throw new RuntimeException('No fue posible cargar las sesiones del grupo.');
         $stmt->bind_param('ii', $idTutor, $idAlumno);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);

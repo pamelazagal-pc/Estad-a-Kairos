@@ -562,8 +562,8 @@ body { font-size: 13px; }
 .content { min-width: 0; }
 .group-picker { flex-shrink: 0; }
 .group-picker-grid { max-height: 148px; overflow-y: auto; }
-.timer-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
-.timer-row .timer-card { width: 100%; }
+.timer-row { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: stretch; }
+.timer-row .timer-card { width: 100%; grid-column: 2; }
 .kpi-row { gap: 12px; }
 .kpi-card { min-width: 0; padding: 13px 16px 12px; }
 .kpi-label { font-size: 10.5px; }
@@ -574,10 +574,10 @@ body { font-size: 13px; }
 .incidencias-recientes-card { margin-top: 0; }
 .incidencias-recientes-card .tabla-scroll { max-height: 230px; overflow: auto; }
 .incidencias-table { min-width: 760px; }
-.bottom-row { display: block; }
-.incident-open { width: 100%; min-height: 76px; }
+.bottom-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.incident-open { width: 100%; min-height: 64px; }
 .incident-modal[hidden] { display: none; }
-.incident-modal.is-open { position: fixed; top: 72px; left: 0; bottom: 0; width: min(390px, calc(100vw - 18px)); max-height: none; overflow-y: auto; transform: none; border-radius: 0 14px 14px 0; box-shadow: 12px 0 34px rgba(28,43,54,.24); }
+.incident-modal.is-open { position: static; width: 100%; max-height: none; overflow: visible; transform: none; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
 .incident-modal .card-header { cursor: default; }
 .break-alert { display: none; }
 .break-alert.is-visible { display: block; }
@@ -585,8 +585,8 @@ body { font-size: 13px; }
 .message-success.is-visible { display: inline; }
 
 @media (min-width: 900px) {
-    .timer-row { grid-template-columns: minmax(0, 1fr) 330px; align-items: stretch; }
-    .timer-row .timer-card { height: 100%; }
+    .timer-row { grid-template-columns: minmax(0, 1fr) 360px; align-items: stretch; }
+    .timer-row .timer-card { grid-column: 2; height: 100%; }
 }
 
 @media (max-width: 850px) {
@@ -618,14 +618,15 @@ body { font-size: 13px; }
     .kpi-card { padding: 11px 12px; }
     .kpi-label { font-size: 10px; }
     .kpi-value { font-size: 23px; }
-    .timer-row { gap: 10px; }
+    .timer-row { grid-template-columns: 1fr; gap: 10px; }
+    .timer-row .timer-card { grid-column: 1; }
     .timer-card { padding: 15px 14px; }
     .timer-display { font-size: 44px; }
     .timer-config { width: 100%; align-items: stretch; }
     .timer-config-duration, .timer-config-level { width: calc(50% - 5px); }
     .timer-controls { gap: 7px; }
     .timer-btn-icon { width: 36px; height: 36px; }
-    .incident-modal.is-open { top: 108px; width: min(360px, calc(100vw - 10px)); border-radius: 0 12px 12px 0; }
+    .incident-modal.is-open { width: 100%; border-radius: var(--radius-lg); }
     .incident-modal .form-grid { grid-template-columns: 1fr; }
     .incidencias-recientes-card .tabla-scroll { max-height: 210px; }
 }

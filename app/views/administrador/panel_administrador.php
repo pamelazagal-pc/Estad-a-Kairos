@@ -44,6 +44,8 @@ $errorResumen = $errorResumen ?? null;
                 <a class="panel-tarjeta" href="videos.php"><span class="panel-icono" aria-hidden="true">▶</span><strong>Administrar videos</strong><span>Gestionar enlaces de YouTube para pausas activas.</span><b>→</b></a>
                 <a class="panel-tarjeta" href="lecturas.php"><span class="panel-icono" aria-hidden="true">▤</span><strong>Lecturas y cuentos</strong><span>Crear y publicar lecturas cortas por categoría temática.</span><b>→</b></a>
                 <a class="panel-tarjeta" href="recompensas.php"><span class="panel-icono" aria-hidden="true">★</span><strong>Medallas y puntos</strong><span>Administrar reconocimientos para la conducta positiva.</span><b>→</b></a>
+                <a class="panel-tarjeta" href="respaldos.php"><span class="panel-icono" aria-hidden="true">▣</span><strong>Respaldos</strong><span>Generar, descargar y restaurar copias de seguridad de Kairos.</span><b>→</b></a>
+                <a class="panel-tarjeta" href="reporte_administrador.php"><span class="panel-icono" aria-hidden="true">▥</span><strong>Reportes generales</strong><span>Analizar emociones, incidencias, grupos y seguimiento institucional.</span><b>→</b></a>
             </div>
         </section>
 

@@ -18,6 +18,7 @@
         <a class="panel-nav-item" href="accesos/videos.php"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3V9Z"/></svg><span>Videos de YouTube</span></a>
         <a class="panel-nav-item" href="accesos/lecturas.php"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 5.5v16M8 7h8M8 11h8"/></svg><span>Lecturas y cuentos</span></a>
         <a class="panel-nav-item" href="accesos/recompensas.php"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a3 3 0 0 0 3 5M17 6h3a3 3 0 0 1-3 5"/></svg><span>Medallas y puntos</span></a>
+        <a class="panel-nav-item" href="accesos/respaldos.php"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7"/></svg><span>Respaldos</span></a>
     </nav>
     <a class="panel-nav-item panel-nav-salida" href="accesos/logout.php"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg><span>Cerrar sesión</span></a>
 </aside>

@@ -46,11 +46,24 @@ class SesionTemporizador
 
     public function cambiarEstado(int $idSesion, int $idDocente, string $estado): bool
     {
-        if (!in_array($estado, ['En curso', 'Finalizado', 'Interrumpido'], true)) throw new InvalidArgumentException('El estado de sesión no es válido.');
+        if ($idSesion <= 0 || !in_array($estado, ['En curso', 'Finalizado', 'Interrumpido'], true)) {
+            throw new InvalidArgumentException('El estado de sesión no es válido.');
+        }
+
+        // Primero se valida la existencia y pertenencia. affected_rows puede ser 0
+        // cuando se solicita reanudar una sesión que ya está En curso.
+        $consulta = $this->connection->prepare('SELECT estado FROM sesiones_temporizador WHERE id_sesion = ? AND id_docente = ? LIMIT 1');
+        if (!$consulta) throw new RuntimeException('No fue posible validar la sesión.');
+        $consulta->bind_param('ii', $idSesion, $idDocente);
+        $consulta->execute();
+        if (!$consulta->get_result()->fetch_assoc()) {
+            throw new RuntimeException('La sesión no existe o no pertenece a este maestro.');
+        }
+
         $stmt = $this->connection->prepare('UPDATE sesiones_temporizador SET estado = ?, fecha_fin = CASE WHEN ? IN (\'Finalizado\', \'Interrumpido\') THEN NOW() ELSE fecha_fin END WHERE id_sesion = ? AND id_docente = ?');
+        if (!$stmt) throw new RuntimeException('No fue posible actualizar la sesión.');
         $stmt->bind_param('ssii', $estado, $estado, $idSesion, $idDocente);
         if (!$stmt->execute()) throw new RuntimeException($stmt->error);
-        if ($stmt->affected_rows < 1) throw new RuntimeException('La sesión no existe o no pertenece a este maestro.');
         return true;
     }
 

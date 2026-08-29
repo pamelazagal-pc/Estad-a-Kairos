@@ -236,6 +236,7 @@
             </select>
           </div>
           <textarea class="form-textarea form-select" id="txt-desc" name="descripcion" maxlength="1000" required placeholder="Descripción de la situación (máx. 5 líneas): detonante identificado, contexto del aula, acción tomada..."></textarea>
+          <label class="notify-toggle"><input type="checkbox" name="notificar_tutor" value="1"> Comunicar esta incidencia al tutor</label>
         </div>
         <div class="form-actions">
           <button class="btn-save" type="submit">
@@ -270,6 +271,7 @@
               <?php if ($recompensas === []): ?><small class="form-help">El administrador aún no ha publicado medallas activas.</small><?php endif; ?>
             </div>
             <textarea class="form-textarea form-select" id="medal-descripcion" name="descripcion_medalla" maxlength="1000" required placeholder="Describe la conducta positiva reconocida."></textarea>
+            <label class="notify-toggle"><input type="checkbox" name="notificar_tutor" value="1"> Comunicar esta medalla al tutor</label>
           </div>
           <div class="form-actions">
             <button class="btn-save" type="submit" <?= $recompensas === [] ? 'disabled' : '' ?>>Asignar medalla</button>
@@ -468,6 +470,14 @@ function fmtTime(s) {
 const timerStorageKey = `kairos_timer_${grupoActual || "sin-grupo"}`;
 function saveTimerState() {
   if (!grupoActual || elapsed <= 0) return;
+  const previo = (() => {
+    try { return JSON.parse(localStorage.getItem(timerStorageKey) || "null") || {}; }
+    catch (error) { return {}; }
+  })();
+  const ahora = Date.now();
+  const endAt = running
+    ? (Number(previo.endAt) > ahora ? Number(previo.endAt) : ahora + elapsed * 1000)
+    : null;
   localStorage.setItem(timerStorageKey, JSON.stringify({
     totalSeconds,
     elapsed,
@@ -475,8 +485,8 @@ function saveTimerState() {
     nivel: Number(document.getElementById("timer-nivel").value) || 2,
     activeSessionId,
     running,
-    savedAt: Date.now(),
-    endAt: running ? Date.now() + elapsed * 1000 : null
+    savedAt: ahora,
+    endAt
   }));
 }
 function clearTimerState() {

@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../models/AlumnoTutor.php';
+require_once __DIR__ . '/../services/AsignacionMailer.php';
 
 class AlumnoTutorController
 {
@@ -50,8 +51,27 @@ class AlumnoTutorController
         }
 
         try {
-            $this->modelo->guardar((int) $idAlumno, (int) $idTutor, $parentesco !== '' ? $parentesco : null, $esPrincipal);
-            return ['ok' => true, 'mensaje' => 'Relación alumno-tutor guardada correctamente.', 'errores' => []];
+            $yaEstabaActiva = $this->modelo->existeRelacionActiva((int) $idAlumno, (int) $idTutor);
+            $parentescoGuardar = $parentesco !== '' ? $parentesco : null;
+            $this->modelo->guardar((int) $idAlumno, (int) $idTutor, $parentescoGuardar, $esPrincipal);
+            $mensaje = 'Relación alumno-tutor guardada correctamente.';
+            if ($yaEstabaActiva) {
+                return ['ok' => true, 'mensaje' => $mensaje . ' La relación ya estaba activa; no se envió un correo duplicado.', 'errores' => []];
+            }
+            try {
+                $datos = $this->modelo->datosRelacion((int) $idAlumno, (int) $idTutor);
+                if ($datos && !empty($datos['correo'])) {
+                    (new AsignacionMailer())->enviarAlumnoTutor($datos);
+                    $mensaje .= ' Se envió el aviso al correo del tutor.';
+                } else {
+                    $mensaje .= ' No se encontró un correo válido para enviar el aviso.';
+                }
+            } catch (Throwable $mailException) {
+                error_log('Aviso de asignación alumno-tutor: ' . $mailException->getMessage());
+                $mensaje .= ' La relación se guardó, pero no fue posible enviar el correo.';
+            }
+            return ['ok' => true, 'mensaje' => $mensaje, 'errores' => []];
+
         } catch (Throwable $exception) {
             error_log($exception->getMessage());
             return ['ok' => false, 'errores' => [$exception->getMessage()]];

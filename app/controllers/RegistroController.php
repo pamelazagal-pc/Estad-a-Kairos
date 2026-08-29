@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../models/Tutor.php';
+require_once __DIR__ . '/../services/BienvenidaMailer.php';
 require_once __DIR__ . '/../models/Grupo.php';
 require_once __DIR__ . '/../models/Alumno.php';
 
@@ -65,7 +66,15 @@ class RegistroController
                 $datos['telefono'] !== '' ? $datos['telefono'] : null
             );
 
-            return ['ok' => true, 'mensaje' => 'Tutor registrado correctamente.', 'errores' => [], 'datos' => []];
+            $mensaje = 'Tutor registrado correctamente.';
+            try {
+                (new BienvenidaMailer())->enviar('tutor', $datos['nombre'], $datos['correo']);
+                $mensaje .= ' Se envió el correo de bienvenida.';
+            } catch (Throwable $mailException) {
+                error_log($mailException->getMessage());
+                $mensaje .= ' La cuenta se creó, pero no fue posible enviar el correo de bienvenida.';
+            }
+            return ['ok' => true, 'mensaje' => $mensaje, 'errores' => [], 'datos' => []];
         } catch (Throwable $exception) {
             error_log($exception->getMessage());
             return ['ok' => false, 'errores' => [$exception->getMessage()], 'datos' => $datos];

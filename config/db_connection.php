@@ -1,5 +1,7 @@
 <?php
- 
+
+date_default_timezone_set('America/Mexico_City');
+
     $server ="localhost";
     $user ="root";
     $password ="";
@@ -8,6 +10,10 @@
 //crear conexion a la base de datos
 
     $connection = new mysqli($server, $user, $password, $db);
+    if (!$connection->connect_errno) {
+        $connection->set_charset('utf8mb4');
+        $connection->query("SET time_zone = '-06:00'");
+    }
 
     //evaluar la conexion
 

@@ -23,6 +23,7 @@ $mensaje = $resultado['mensaje'] ?? null;
         <input id="password" name="password" type="password" required>
         <button type="submit">Iniciar sesión</button>
     </form>
+    <p class="recuperacion-link"><a href="../recuperar.php?tipo=maestro">¿Olvidaste tu contraseña?</a></p>
 </main>
 </body>
 </html>

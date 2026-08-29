@@ -1,4 +1,4 @@
-<aside class="sidebar" aria-label="Navegación del maestro">
+<aside class="sidebar">
     <a class="sidebar-logo" href="dashboard_maestro.php" aria-label="Volver al tablero del maestro">
         <div class="logo-mark">K</div>
         <div class="logo-name">KAIROS <span class="logo-sub"><br>Gestión emocional</span></div>
@@ -10,10 +10,9 @@
         <div class="nav-label">Registros</div>
         <a class="nav-item" title="Bitácora emocional" href="bitacora_maestro.php"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg><span>Bitácora emocional</span></a>
         <div class="nav-label">Recursos</div>
-        <a class="nav-item" title="Recursos pedagógicos" href="recursos.php"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h5v17H6a2 2 0 0 1-2 2z"/><path d="M20 5a2 2 0 0 0-2-2h-5v17h5a2 2 0 0 0 2-2zM8 7h1M15 7h1M8 11h1M15 11h1"/></svg><span>Recursos pedagógicos</span></a>
+        <a class="nav-item" title="Recursos pedagógicos" href="recursos.php"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h5v17H6a2 2 0 0 0-2 2z"/><path d="M20 5a2 2 0 0 0-2-2h-5v17h5a2 2 0 0 0 2-2zM8 7h1M15 7h1M8 11h1M15 11h1"/></svg><span>Recursos pedagógicos</span></a>
+        <a class="nav-item" title="Consejos para el hogar" href="consejos.php"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M4 5.5v16M8 8h8M8 12h6M8 16h8"/></svg><span>Consejos para el hogar</span></a>
         <a class="nav-item" title="Reportes" href="reportes.php"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M7 15l3-4 3 2 5-6"/></svg><span>Reportes</span></a>
-        <div class="nav-label">Sistema</div>
-        <a class="nav-item" title="Configuración" href="dashboard_maestro.php#configuracion"><svg class="nav-icon icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93 17.66 6.34M6.34 6.34 4.93 4.93M12 2v2M12 20v2M2 12h2M20 12h2M4.93 19.07l1.41-1.41M18.66 18.66l-1.41-1.41"/></svg><span>Configuración</span></a>
     </nav>
     <div class="sidebar-timer" data-maestro-timer aria-live="polite">
         <span class="sidebar-timer-label">Temporizador</span>
